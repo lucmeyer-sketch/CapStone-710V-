@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APT - Plataforma SaaS Educativa Integral</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 1rem 2rem;
+            color: #666;
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #f0f8ff;
+            color: #1976d2;
+            border-left-color: #1976d2;
+        }
+
+        .nav-item i {
+            margin-right: 0.5rem;
+            width: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .metric-icon.primary { background-color: #1976d2; }
+        .metric-icon.secondary { background-color: #dc004e; }
+        .metric-icon.success { background-color: #4caf50; }
+        .metric-icon.info { background-color: #2196f3; }
+        .metric-icon.warning { background-color: #ff9800; }
+        .metric-icon.error { background-color: #f44336; }
+
+        .metric-info h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .metric-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #4caf50;
+            transition: width 0.3s ease;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-badge.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .notifications {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .notification {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .notification.info {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .notification.warning {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .notification.success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .notification-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .notification-badge.info {
+            background-color: #1976d2;
+            color: white;
+        }
+
+        .notification-badge.warning {
+            background-color: #f57c00;
+            color: white;
+        }
+
+        .notification-badge.success {
+            background-color: #2e7d32;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .btn {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #1565c0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th, .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">APT - Plataforma SaaS Educativa Integral</div>
+        <div class="user-info">
+            <span>José (Docente)</span>
+            <div class="user-avatar">J</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <nav class="sidebar">
+            <a href="#" class="nav-item active" onclick="showPage('dashboard')">
+                <i>📊</i> Dashboard
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('attendance')">
+                <i>🏫</i> Asistencia
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('reports')">
+                <i>📈</i> Reportes
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('students')">
+                <i>👥</i> Estudiantes
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('messages')">
+                <i>💬</i> Mensajería
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('settings')">
+                <i>⚙️</i> Configuración
+            </a>
+        </nav>
+
+        <main class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboard" class="page">
+                <h1 class="page-title">Dashboard Institucional</h1>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon primary">🏫</div>
+                        <div class="metric-info">
+                            <h3>156</h3>
+                            <p>Total Estudiantes</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon secondary">👨‍🏫</div>
+                        <div class="metric-info">
+                            <h3>24</h3>
+                            <p>Total Docentes</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon success">📈</div>
+                        <div class="metric-info">
+                            <h3>87.5%</h3>
+                            <p>Tasa de Asistencia</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 87.5%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon info">📊</div>
+                        <div class="metric-info">
+                            <h3>82.3</h3>
+                            <p>Promedio General</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon warning">👥</div>
+                        <div class="metric-info">
+                            <h3>18</h3>
+                            <p>Usuarios Activos</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon error">📋</div>
+                        <div class="metric-info">
+                            <h3>45</h3>
+                            <p>Reportes Generados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Estado del Sistema</h2>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span>Estado del Servidor</span>
+                            <span class="status-badge success">Activo</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Base de Datos</span>
+                            <span class="status-badge success">Conectada</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Backup</span>
+                            <span class="status-badge success">Actualizado</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Última Sincronización</span>
+                            <span class="status-badge info">Hace 5 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Notificaciones Recientes</h2>
+                    <div class="notifications">
+                        <div class="notification info">
+                            <span class="notification-badge info">INFO</span>
+                            <span>Se generó automáticamente el reporte de asistencia del mes de enero</span>
+                        </div>
+                        <div class="notification warning">
+                            <span class="notification-badge warning">WARNING</span>
+                            <span>3 estudiantes tienen asistencia por debajo del 80%</span>
+                        </div>
+                        <div class="notification success">
+                            <span class="notification-badge success">SUCCESS</span>
+                            <span>Se completó la sincronización con Google Workspace</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asistencia -->
+            <div id="attendance" class="page hidden">
+                <h1 class="page-title">Control de Asistencia</h1>
+                
+                <div class="section">
+                    <h2>Registrar Asistencia</h2>
+                    <form id="attendanceForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="attendanceDate">Fecha</label>
+                                <input type="date" id="attendanceDate" value="2024-01-15">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentSelect">Estudiante</label>
+                                <select id="studentSelect">
+                                    <option value="">Seleccionar estudiante</option>
+                                    <option value="1">Juan Pérez - 10°A</option>
+                                    <option value="2">Sofía López - 10°A</option>
+                                    <option value="3">Diego Ramírez - 11°B</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="attendanceStatus">Estado</label>
+                                <select id="attendanceStatus">
+                                    <option value="present">Presente</option>
+                                    <option value="absent">Ausente</option>
+                                    <option value="late">Tardanza</option>
+                                    <option value="excused">Justificado</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="attendanceNotes">Notas (opcional)</label>
+                                <input type="text" id="attendanceNotes" placeholder="Notas adicionales">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Registrar Asistencia</button>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2>Lista de Asistencia - Hoy</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Grado/Sección</th>
+                                <th>Estado</th>
+                                <th>Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                            <tr>
+                                <td>Juan Pérez</td>
+                                <td>10°A</td>
+                                <td><span class="status-badge success">Presente</span></td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Sofía López</td>
+                                <td>10°A</td>
+                                <td><span class="status-badge warning">Tardanza</span></td>
+                                <td>Llegó 10 min tarde</td>
+                            </tr>
+                            <tr>
+                                <td>Diego Ramírez</td>
+                                <td>11°B</td>
+                                <td><span class="status-badge error">Ausente</span></td>
+                                <td>Justificación médica</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reportes -->
+            <div id="reports" class="page hidden">
+                <h1 class="page-title">Sistema de Reportes</h1>
+                
+                <div class="section">
+                    <h2>Generar Nuevo Reporte</h2>
+                    <form id="reportForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reportType">Tipo de Reporte</label>
+                                <select id="reportType">
+                                    <option value="attendance">Reporte de Asistencia</option>
+                                    <option value="academic">Reporte Académico</option>
+                                    <option value="institutional">Reporte Institucional</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportGrade">Grado</label>
+                                <select id="reportGrade">
+                                    <option value="">Todos</option>
+                                    <option value="9">9°</option>
+                                    <option value="10">10°</option>
+                                    <option value="11">11°</option>
+                                    <option value="12">12°</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startDate">Fecha Inicio</label>
+                                <input type="date" id="startDate" value="2024-01-01">
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">Fecha Fin</label>
+                                <input type="date" id="endDate" value="2024-01-31">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Generar Reporte</button>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2>Reportes Generados</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Reporte de Asistencia - Enero 2024</td>
+                                <td><span class="status-badge info">Asistencia</span></td>
+                                <td>15/01/2024</td>
+                                <td><span class="status-badge success">Completado</span></td>
+                                <td>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Ver</button>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-left: 0.5rem;">Descargar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Reporte Académico - Diciembre 2023</td>
+                                <td><span class="status-badge success">Académico</span></td>
+                                <td>30/12/2023</td>
+                                <td><span class="status-badge success">Completado</span></td>
+                                <td>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Ver</button>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-left: 0.5rem;">Descargar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Estudiantes -->
+            <div id="students" class="page hidden">
+                <h1 class="page-title">Gestión de Estudiantes</h1>
+                
+                <div class="section">
+                    <h2>Agregar Estudiante</h2>
+                    <form id="studentForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentName">Nombre</label>
+                                <input type="text" id="studentName" placeholder="Nombre del estudiante">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentLastName">Apellido</label>
+                                <input type="text" id="studentLastName" placeholder="Apellido del estudiante">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentEmail">Email</label>
+                                <input type="email" id="studentEmail" placeholder="email@estudiante.edu">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentGrade">Grado</label>
+                                <select id="studentGrade">
+                                    <option value="">Seleccionar grado</option>
+                                    <option value="9">9°</option>
+                                    <option value="10">10°</option>
+                                    <option value="11">11°</option>
+                                    <option value="12">12°</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentSection">Sección</label>
+                            <select id="studentSection">
+                                <option value="">Seleccionar sección</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">Agregar Estudiante</button>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2>Lista de Estudiantes</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Grado/Sección</th>
+                                <th>Email</th>
+                                <th>Promedio</th>
+                                <th>Asistencia</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Juan Pérez</td>
+                                <td>10°A</td>
+                                <td>juan.perez@estudiante.edu</td>
+                                <td>85.0</td>
+                                <td>87.5%</td>
+                                <td>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Editar</button>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-left: 0.5rem; background-color: #dc3545;">Eliminar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Sofía López</td>
+                                <td>10°A</td>
+                                <td>sofia.lopez@estudiante.edu</td>
+                                <td>92.0</td>
+                                <td>95.0%</td>
+                                <td>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Editar</button>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-left: 0.5rem; background-color: #dc3545;">Eliminar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Diego Ramírez</td>
+                                <td>11°B</td>
+                                <td>diego.ramirez@estudiante.edu</td>
+                                <td>78.0</td>
+                                <td>82.5%</td>
+                                <td>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Editar</button>
+                                    <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-left: 0.5rem; background-color: #dc3545;">Eliminar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mensajería -->
+            <div id="messages" class="page hidden">
+                <h1 class="page-title">Mensajería Instantánea</h1>
+                
+                <div class="section">
+                    <h2>Nuevo Mensaje</h2>
+                    <form id="messageForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="messageType">Tipo de Mensaje</label>
+                                <select id="messageType">
+                                    <option value="direct">Mensaje Directo</option>
+                                    <option value="group">Mensaje Grupal</option>
+                                    <option value="announcement">Anuncio</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="messageReceiver">Destinatario</label>
+                                <select id="messageReceiver">
+                                    <option value="">Seleccionar destinatario</option>
+                                    <option value="maria">María González (Administradora)</option>
+                                    <option value="carlos">Carlos Ruiz (Director)</option>
+                                    <option value="ana">Ana Martínez (Psicóloga)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="messageContent">Mensaje</label>
+                            <textarea id="messageContent" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+                        </div>
+                        <button type="submit" class="btn">Enviar Mensaje</button>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2>Conversaciones Recientes</h2>
+                    <div class="notifications">
+                        <div class="notification info">
+                            <span class="notification-badge info">DIRECTO</span>
+                            <span><strong>María González:</strong> "¿Podrías enviarme el reporte de asistencia de la semana pasada?"</span>
+                        </div>
+                        <div class="notification warning">
+                            <span class="notification-badge warning">GRUPAL</span>
+                            <span><strong>Carlos Ruiz:</strong> "Recordatorio: Reunión de coordinación mañana a las 10:00 AM"</span>
+                        </div>
+                        <div class="notification success">
+                            <span class="notification-badge success">ANUNCIO</span>
+                            <span><strong>Ana Martínez:</strong> "Nuevo protocolo de seguimiento estudiantil disponible"</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración -->
+            <div id="settings" class="page hidden">
+                <h1 class="page-title">Configuración del Sistema</h1>
+                
+                <div class="section">
+                    <h2>Configuración General</h2>
+                    <form id="settingsForm">
+                        <div class="form-group">
+                            <label for="institutionName">Nombre de la Institución</label>
+                            <input type="text" id="institutionName" value="Colegio San Patricio" placeholder="Nombre de la institución">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="academicYear">Año Académico</label>
+                                <input type="text" id="academicYear" value="2024" placeholder="Año académico">
+                            </div>
+                            <div class="form-group">
+                                <label for="timezone">Zona Horaria</label>
+                                <select id="timezone">
+                                    <option value="UTC-5">UTC-5 (Colombia)</option>
+                                    <option value="UTC-4">UTC-4 (Venezuela)</option>
+                                    <option value="UTC-3">UTC-3 (Argentina)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="language">Idioma</label>
+                            <select id="language">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="pt">Português</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">Guardar Configuración</button>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2>Integraciones</h2>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span>Google Workspace</span>
+                            <span class="status-badge success">Conectado</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Microsoft Office 365</span>
+                            <span class="status-badge info">Pendiente</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Sistema de Pagos</span>
+                            <span class="status-badge info">Pendiente</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Backup Automático</span>
+                            <span class="status-badge success">Activo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Función para mostrar páginas
+        function showPage(pageId) {
+            // Ocultar todas las páginas
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.add('hidden'));
+            
+            // Mostrar la página seleccionada
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            // Actualizar navegación activa
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Funciones para formularios
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Asistencia registrada exitosamente');
+        });
+
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Reporte generado exitosamente');
+        });
+
+        document.getElementById('studentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Estudiante agregado exitosamente');
+        });
+
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Mensaje enviado exitosamente');
+        });
+
+        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Configuración guardada exitosamente');
+        });
+
+        // Simular datos en tiempo real
+        function updateMetrics() {
+            const metrics = document.querySelectorAll('.metric-info h3');
+            // Aquí podrías actualizar las métricas con datos reales
+        }
+
+        // Actualizar métricas cada 30 segundos
+        setInterval(updateMetrics, 30000);
+    </script>
+</body>
+</html>
