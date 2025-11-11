@@ -42,12 +42,12 @@ Esta es una **demo funcional** de la plataforma SaaS educativa integral desarrol
 
 ## 🚀 Cómo Usar
 
-### Opción 1: Uso Directo (Recomendado)
-1. **Descarga** o clona este repositorio
-2. **Abre** el archivo `index.html` en tu navegador
-3. **¡Listo!** La plataforma funciona inmediatamente
+### Requisitos Previos
+- Node.js 16+ y npm instalados
+- Git (opcional, para clonar el repositorio)
 
-### Opción 2: Con Node.js
+### Instalación y Ejecución
+
 ```bash
 # Instalar dependencias
 npm install
@@ -55,9 +55,46 @@ npm install
 # Ejecutar en modo desarrollo
 npm start
 
-# Abrir en el navegador
-http://localhost:3000
+# La aplicación se abrirá automáticamente en http://localhost:3000
 ```
+
+### Construir para Producción
+
+```bash
+# Crear build optimizado
+npm run build
+
+# Los archivos estarán en la carpeta 'build'
+```
+
+## 👤 Roles de Usuario
+
+La plataforma incluye diferentes roles con accesos específicos:
+
+### 🎓 Estudiante
+- Ver sus propias calificaciones y promedios
+- Consultar su asistencia
+- Acceder a mensajería
+- Dashboard personalizado con su rendimiento
+
+### 👨‍🏫 Docente
+- Gestión completa de estudiantes
+- Sistema de asistencia
+- Registro de calificaciones
+- Generación de reportes
+- Mensajería con estudiantes y colegas
+
+### 🧠 Psicóloga
+- Seguimiento de estudiantes en riesgo
+- Agenda de sesiones
+- Panel de casos críticos
+- Mensajería
+
+### 👔 Director
+- Dashboard institucional completo
+- Métricas y estadísticas generales
+- Reportes ejecutivos
+- Gestión de situaciones críticas
 
 ## 🎯 Objetivos del MVP
 
@@ -81,19 +118,24 @@ http://localhost:3000
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **HTML5** - Estructura semántica
-- **CSS3** - Diseño moderno y responsive
-- **JavaScript** - Interactividad y funcionalidad
-- **Material Design** - Principios de diseño
-- **Responsive Design** - Compatible con móviles
+- **React 19** - Framework de JavaScript para interfaces de usuario
+- **TypeScript** - Tipado estático para JavaScript
+- **Material-UI (MUI)** - Biblioteca de componentes React basada en Material Design
+- **React Router** - Enrutamiento para aplicaciones React
+- **Emotion** - Biblioteca de CSS-in-JS para estilos
+- **Responsive Design** - Compatible con dispositivos móviles y tablets
 
 ## 📱 Funcionalidades de Demostración
 
-- **Navegación fluida** entre secciones
-- **Formularios funcionales** que responden al envío
-- **Diseño responsive** que se adapta a móviles
+- **Selector de roles** al inicio para elegir el perfil de usuario
+- **Dashboards específicos** por rol con información relevante
+- **Sistema educativo chileno** adaptado (1°-8° Básico, 1°-4° Medio)
+- **Calificaciones en escala chilena** (1.0 - 7.0)
+- **Navegación dinámica** según el rol del usuario
+- **Formularios funcionales** para gestión de estudiantes y asistencia
+- **Diseño responsive** que se adapta a móviles y tablets
 - **Interfaz profesional** con Material Design
-- **Datos de ejemplo** realistas
+- **Datos ficticios realistas** para demostración
 
 ## 🎨 Diseño
 
