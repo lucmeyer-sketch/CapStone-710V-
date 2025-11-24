@@ -52,6 +52,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
     default: // 'teacher'
       navItems = [
         { text: 'Dashboard', icon: '📊', path: '/dashboard' },
+        { text: 'Administración', icon: '🏛️', path: '/admin' },
+        { text: 'Mis Clases', icon: '📚', path: '/classes' },
         { text: 'Asistencia', icon: '🏫', path: '/attendance' },
         { text: 'Reportes', icon: '📈', path: '/reports' },
         { text: 'Estudiantes', icon: '👥', path: '/students' },
@@ -62,17 +64,26 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
 
   return (
     <nav className="sidebar">
-      {navItems.map((item) => (
-        <NavLink 
-          to={item.path} 
-          key={item.path}
-          // Esto hace que el link activo tenga la clase 'active'
-          className={({ isActive }) => "nav-item" + (isActive ? " active" : "")}
-        >
-          <i>{item.icon}</i>
-          {item.text}
-        </NavLink>
-      ))}
+      <div className="sidebar-header">
+        <div className="sidebar-logo">📚</div>
+        <div className="sidebar-title">Menú</div>
+      </div>
+      <div className="nav-items-container">
+        {navItems.map((item, index) => (
+          <NavLink 
+            to={item.path} 
+            key={item.path}
+            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+            style={{ animationDelay: `${index * 0.05}s` }}
+          >
+            <div className="nav-icon-wrapper">
+              <span className="nav-icon">{item.icon}</span>
+            </div>
+            <span className="nav-text">{item.text}</span>
+            <div className="nav-indicator"></div>
+          </NavLink>
+        ))}
+      </div>
     </nav>
   );
 };

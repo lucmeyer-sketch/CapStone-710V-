@@ -15,24 +15,46 @@ const Layout: React.FC<LayoutProps> = ({ currentUser, onLogout }) => {
   // 3. CAMBIO: Eliminamos la función 'handleLogout' interna que
   // llamaba a supabase.auth.signOut()
 
+  // Mapear roles a iconos y colores
+  const getRoleInfo = (rol: string) => {
+    const roleMap: { [key: string]: { icon: string; color: string; label: string } } = {
+      'student': { icon: '🎓', color: '#667eea', label: 'Estudiante' },
+      'teacher': { icon: '👨‍🏫', color: '#f093fb', label: 'Docente' },
+      'psychologist': { icon: '🧠', color: '#4facfe', label: 'Psicólogo' },
+      'director': { icon: '👔', color: '#43e97b', label: 'Director' },
+      'admin': { icon: '🛡️', color: '#fa709a', label: 'Administrador' }
+    };
+    return roleMap[rol] || { icon: '👤', color: '#6b7280', label: rol };
+  };
+
+  const roleInfo = getRoleInfo(currentUser.rol);
+
   return (
     <>
       <header className="header">
-        <div className="logo">APT - Plataforma SaaS Educativa Integral</div>
-        <div className="user-info">
-          {/* Esto se queda igual, tomará el email simulado */}
-          <span id="userName">{`${currentUser.email} (${currentUser.rol})`}</span>
-          <div className="user-avatar" id="userAvatar">
-            {currentUser.email.charAt(0).toUpperCase()}
+        <div className="logo-container">
+          <div className="logo-icon">🎓</div>
+          <div className="logo-text">
+            <span className="logo-main">APT</span>
+            <span className="logo-sub">Plataforma Educativa Integral</span>
           </div>
-          
-          {/* 4. CAMBIO: El botón ahora usa 'onLogout' y dice "Cambiar Rol" */}
+        </div>
+        <div className="user-info">
+          <div className="user-details">
+            <span className="user-email">{currentUser.email}</span>
+            <span className="user-role-badge" style={{ backgroundColor: roleInfo.color }}>
+              {roleInfo.icon} {roleInfo.label}
+            </span>
+          </div>
+          <div className="user-avatar" id="userAvatar" style={{ background: `linear-gradient(135deg, ${roleInfo.color} 0%, ${roleInfo.color}dd 100%)` }}>
+            {currentUser.nombre?.charAt(0) || currentUser.email.charAt(0).toUpperCase()}
+          </div>
           <button 
-            onClick={onLogout} // Usa la función que viene de App.tsx
-            className="btn" 
-            style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', marginLeft: '0.5rem' }}
+            onClick={onLogout}
+            className="btn-logout"
           >
-            Cambiar Rol 
+            <span className="btn-icon">🚪</span>
+            <span className="btn-text">Salir</span>
           </button>
         </div>
       </header>

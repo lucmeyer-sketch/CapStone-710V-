@@ -1,6 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UsuarioConDetalles } from '../../services/authService';
 import { supabase } from '../../supabaseClient';
+
+interface ClaseAsignada {
+  id: number;
+  grado: string;
+  seccion: string;
+  horario?: string;
+  aula?: string;
+  materia?: {
+    nombre: string;
+    codigo: string;
+  };
+  totalEstudiantes?: number;
+}
 
 interface ProfileSettingsProps {
   usuario: UsuarioConDetalles;
@@ -13,6 +26,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ usuario, onLogout }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [clasesAsignadas, setClasesAsignadas] = useState<ClaseAsignada[]>([]);
 
   const [formData, setFormData] = useState({
     nombre: usuario.detalles?.nombre || '',
@@ -32,6 +46,52 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ usuario, onLogout }) 
 
   // obtener iniciales para el avatar
   const iniciales = `${usuario.detalles?.nombre?.charAt(0) || ''}${usuario.detalles?.apellido?.charAt(0) || ''}`.toUpperCase();
+
+  // cargar clases asignadas si es docente
+  useEffect(() => {
+    if (esDocente && usuario.detalles?.id) {
+      cargarClasesAsignadas();
+    }
+  }, [esDocente, usuario.detalles?.id]);
+
+  const cargarClasesAsignadas = async () => {
+    try {
+      const { data: clasesData, error: clasesError } = await supabase
+        .from('clases')
+        .select(`
+          *,
+          materia:materias (
+            nombre,
+            codigo
+          )
+        `)
+        .eq('docente_id', usuario.detalles?.id)
+        .eq('estado', 'activo')
+        .order('grado', { ascending: true });
+
+      if (clasesError) throw clasesError;
+
+      // para cada clase, contar estudiantes inscritos
+      const clasesConConteo = await Promise.all(
+        (clasesData || []).map(async (clase) => {
+          const { count } = await supabase
+            .from('inscripciones')
+            .select('*', { count: 'exact', head: true })
+            .eq('clase_id', clase.id)
+            .eq('estado', 'activo');
+
+          return {
+            ...clase,
+            totalEstudiantes: count || 0
+          };
+        })
+      );
+
+      setClasesAsignadas(clasesConConteo);
+    } catch (err) {
+      console.error('Error cargando clases:', err);
+    }
+  };
 
   // color del badge según el rol
   const getRolBadgeStyle = () => {
@@ -530,14 +590,180 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ usuario, onLogout }) 
                     </>
                   )}
                   {esDocente && (
-                    <InfoCard
-                      icon="👨‍🏫"
-                      label="Especialidad"
-                      value={usuario.detalles?.especialidad || 'No especificado'}
-                      color="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
-                    />
+                    <>
+                      <InfoCard
+                        icon="👨‍🏫"
+                        label="Especialidad"
+                        value={usuario.detalles?.especialidad || 'No especificado'}
+                        color="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
+                      />
+                      <InfoCard
+                        icon="📖"
+                        label="Materia Asignada"
+                        value={usuario.detalles?.materia?.nombre 
+                          ? `${usuario.detalles.materia.nombre} (${usuario.detalles.materia.codigo})`
+                          : 'No asignada'}
+                        color="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                      />
+                      <InfoCard
+                        icon="📚"
+                        label="Grados Asignados"
+                        value={(usuario.detalles?.grados_array && usuario.detalles.grados_array.length > 0)
+                          ? usuario.detalles.grados_array.join(', ')
+                          : 'No asignados'}
+                        color="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+                      />
+                    </>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Clases Asignadas (solo para docentes) */}
+            {esDocente && (
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                border: '1px solid #e5e7eb'
+              }}>
+                <h2 style={{
+                  fontSize: '20px',
+                  fontWeight: '700',
+                  color: '#1f2937',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  📚 Clases Asignadas
+                </h2>
+
+                {clasesAsignadas.length === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '32px',
+                    backgroundColor: '#f9fafb',
+                    borderRadius: '8px',
+                    border: '1px dashed #d1d5db'
+                  }}>
+                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>📚</div>
+                    <p style={{ color: '#6b7280', fontSize: '14px' }}>
+                      No tienes clases asignadas
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {clasesAsignadas.map((clase) => (
+                      <div
+                        key={clase.id}
+                        style={{
+                          padding: '16px',
+                          backgroundColor: '#f9fafb',
+                          borderRadius: '12px',
+                          border: '1px solid #e5e7eb'
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'start',
+                          marginBottom: '12px'
+                        }}>
+                          <div>
+                            <div style={{
+                              fontSize: '16px',
+                              fontWeight: '600',
+                              color: '#1f2937',
+                              marginBottom: '4px'
+                            }}>
+                              {clase.materia?.nombre || 'Materia'}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                              Código: {clase.materia?.codigo || 'N/A'}
+                            </div>
+                          </div>
+                          <div style={{
+                            backgroundColor: '#dbeafe',
+                            color: '#1e40af',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontWeight: '600'
+                          }}>
+                            {clase.grado}{clase.seccion}
+                          </div>
+                        </div>
+
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gap: '12px',
+                          fontSize: '12px'
+                        }}>
+                          <div>
+                            <div style={{ color: '#6b7280', marginBottom: '4px' }}>
+                              📊 Estudiantes
+                            </div>
+                            <div style={{ fontWeight: '600', color: '#374151' }}>
+                              {clase.totalEstudiantes || 0}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#6b7280', marginBottom: '4px' }}>
+                              🕐 Horario
+                            </div>
+                            <div style={{ fontWeight: '600', color: '#374151' }}>
+                              {clase.horario || 'Por definir'}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#6b7280', marginBottom: '4px' }}>
+                              🚪 Aula
+                            </div>
+                            <div style={{ fontWeight: '600', color: '#374151' }}>
+                              {clase.aula || 'Por asignar'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Resumen */}
+                    <div style={{
+                      marginTop: '8px',
+                      padding: '16px',
+                      backgroundColor: '#eff6ff',
+                      borderRadius: '12px',
+                      border: '1px solid #bfdbfe'
+                    }}>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '16px',
+                        textAlign: 'center'
+                      }}>
+                        <div>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e40af' }}>
+                            {clasesAsignadas.length}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#3b82f6', fontWeight: '600' }}>
+                            Clases Totales
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: '#10b981' }}>
+                            {clasesAsignadas.reduce((sum, c) => sum + (c.totalEstudiantes || 0), 0)}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#059669', fontWeight: '600' }}>
+                            Estudiantes Totales
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

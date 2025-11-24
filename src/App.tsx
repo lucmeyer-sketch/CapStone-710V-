@@ -7,11 +7,13 @@ import AttendanceSystem from './components/Attendance/AttendanceSystem';
 import ReportsSystem from './components/Reports/ReportsSystem';
 import StudentManagement from './components/Students/StudentManagement';
 import MessagingSystem from './components/Messages/MessagingSystem';
+import MyClasses from './components/Classes/MyClasses';
+import AdminPanel from './components/Administration/AdminPanel';
 import StudentDashboard from './components/StudentDashboard/StudentDashboard';
 import PsychologistDashboard from './components/PsychologistDashboard/PsychologistDashboard';
 import DirectorDashboard from './components/DirectorDashboard/DirectorDashboard';
 import ProfileSettings from './components/Settings/ProfileSettings';
-import { UsuarioConDetalles } from './services/authService';
+import { UsuarioConDetalles, getUsuarioById } from './services/authService';
 
 import './index.css';
 
@@ -30,17 +32,30 @@ function App() {
 
   useEffect(() => {
     // verificar si hay un usuario guardado en localStorage
-    const usuarioGuardado = localStorage.getItem('usuario');
-    if (usuarioGuardado) {
-      try {
-        const usuarioData = JSON.parse(usuarioGuardado);
-        setUsuario(usuarioData);
-      } catch (error) {
-        console.error('Error al cargar usuario guardado:', error);
-        localStorage.removeItem('usuario');
+    const cargarUsuario = async () => {
+      const usuarioGuardado = localStorage.getItem('usuario');
+      if (usuarioGuardado) {
+        try {
+          const usuarioData = JSON.parse(usuarioGuardado);
+          // Recargar datos completos desde la base de datos para obtener información actualizada
+          const usuarioCompleto = await getUsuarioById(usuarioData.id);
+          if (usuarioCompleto) {
+            setUsuario(usuarioCompleto);
+            // Actualizar localStorage con datos completos
+            localStorage.setItem('usuario', JSON.stringify(usuarioCompleto));
+          } else {
+            // Si no se puede recargar, usar los datos guardados
+            setUsuario(usuarioData);
+          }
+        } catch (error) {
+          console.error('Error al cargar usuario guardado:', error);
+          localStorage.removeItem('usuario');
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+    
+    cargarUsuario();
   }, []);
 
   const handleLoginSuccess = (usuarioData: UsuarioConDetalles) => {
@@ -119,6 +134,16 @@ function App() {
             {/* Rutas para docentes */}
             {usuario.rol === 'docente' && (
               <>
+                <Route path="admin" element={<AdminPanel docenteActual={usuario} />} />
+                <Route 
+                  path="classes" 
+                  element={
+                    <MyClasses 
+                      docenteId={usuario.detalles?.id || 0} 
+                      docenteNombre={`${usuario.detalles?.nombre || ''} ${usuario.detalles?.apellido || ''}`} 
+                    />
+                  } 
+                />
                 <Route path="attendance" element={<AttendanceSystem />} />
                 <Route path="reports" element={<ReportsSystem />} />
                 <Route path="students" element={<StudentManagement />} />

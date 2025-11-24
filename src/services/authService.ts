@@ -18,6 +18,13 @@ export interface UsuarioConDetalles extends Usuario {
     grado?: string;
     seccion?: string;
     especialidad?: string;
+    // Propiedades específicas para docentes
+    materia?: {
+      id: number;
+      nombre: string;
+      codigo: string;
+    };
+    grados_array?: string[]; // Array de grados asignados: ["10°A", "10°B"]
   };
 }
 
@@ -75,13 +82,67 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       
       detalles = estudiante;
     } else if (usuario.rol === 'docente') {
-      const { data: docente } = await supabase
+      // Obtener información completa del docente incluyendo materia
+      const { data: docente, error: docenteError } = await supabase
         .from('docentes')
-        .select('id, nombre, apellido, telefono, especialidad')
+        .select('id, nombre, apellido, telefono, especialidad, materia_id, grados_asignados')
         .eq('usuario_id', usuario.id)
         .single();
-      
-      detalles = docente;
+
+      if (docenteError) {
+        console.error('Error al cargar docente:', docenteError);
+      }
+
+      if (docente) {
+        // Obtener información de la materia asignada
+        let materia = null;
+        if (docente.materia_id) {
+          const { data: materiaData, error: materiaError } = await supabase
+            .from('materias')
+            .select('id, nombre, codigo')
+            .eq('id', docente.materia_id)
+            .single();
+          
+          if (materiaError) {
+            console.error('Error al cargar materia:', materiaError);
+          } else {
+            materia = materiaData;
+          }
+        }
+
+        // Parsear grados asignados de forma segura
+        let grados_array: string[] = [];
+        if (docente.grados_asignados) {
+          try {
+            // Si es string, parsearlo
+            if (typeof docente.grados_asignados === 'string') {
+              grados_array = JSON.parse(docente.grados_asignados);
+            } 
+            // Si ya es un array, usarlo directamente
+            else if (Array.isArray(docente.grados_asignados)) {
+              grados_array = docente.grados_asignados;
+            }
+          } catch (error) {
+            console.error('Error al parsear grados_asignados:', error, docente.grados_asignados);
+            grados_array = [];
+          }
+        }
+
+        console.log('Docente cargado (login):', {
+          id: docente.id,
+          nombre: docente.nombre,
+          materia_id: docente.materia_id,
+          materia: materia,
+          grados_asignados_raw: docente.grados_asignados,
+          grados_array: grados_array
+        });
+
+        detalles = {
+          ...docente,
+          materia,
+          grados_array
+        };
+      }
     }
 
     return {
@@ -125,13 +186,67 @@ export const getUsuarioById = async (id: number): Promise<UsuarioConDetalles | n
       
       detalles = estudiante;
     } else if (usuario.rol === 'docente') {
-      const { data: docente } = await supabase
+      // Obtener información completa del docente incluyendo materia
+      const { data: docente, error: docenteError } = await supabase
         .from('docentes')
-        .select('id, nombre, apellido, telefono, especialidad')
+        .select('id, nombre, apellido, telefono, especialidad, materia_id, grados_asignados')
         .eq('usuario_id', usuario.id)
         .single();
-      
-      detalles = docente;
+
+      if (docenteError) {
+        console.error('Error al cargar docente:', docenteError);
+      }
+
+      if (docente) {
+        // Obtener información de la materia asignada
+        let materia = null;
+        if (docente.materia_id) {
+          const { data: materiaData, error: materiaError } = await supabase
+            .from('materias')
+            .select('id, nombre, codigo')
+            .eq('id', docente.materia_id)
+            .single();
+          
+          if (materiaError) {
+            console.error('Error al cargar materia:', materiaError);
+          } else {
+            materia = materiaData;
+          }
+        }
+
+        // Parsear grados asignados de forma segura
+        let grados_array: string[] = [];
+        if (docente.grados_asignados) {
+          try {
+            // Si es string, parsearlo
+            if (typeof docente.grados_asignados === 'string') {
+              grados_array = JSON.parse(docente.grados_asignados);
+            } 
+            // Si ya es un array, usarlo directamente
+            else if (Array.isArray(docente.grados_asignados)) {
+              grados_array = docente.grados_asignados;
+            }
+          } catch (error) {
+            console.error('Error al parsear grados_asignados:', error, docente.grados_asignados);
+            grados_array = [];
+          }
+        }
+
+        console.log('Docente cargado (getUsuarioById):', {
+          id: docente.id,
+          nombre: docente.nombre,
+          materia_id: docente.materia_id,
+          materia: materia,
+          grados_asignados_raw: docente.grados_asignados,
+          grados_array: grados_array
+        });
+
+        detalles = {
+          ...docente,
+          materia,
+          grados_array
+        };
+      }
     }
 
     return {

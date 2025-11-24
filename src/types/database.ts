@@ -26,10 +26,14 @@ export interface Docente {
   email: string;
   telefono?: string;
   especialidad?: string;
+  materia_id?: number; // Materia asignada al docente
+  grados_asignados?: string; // JSON con grados: ["10°A", "10°B"]
   estado?: 'activo' | 'inactivo' | 'licencia';
   fecha_contratacion?: string;
   created_at?: string;
   updated_at?: string;
+  // relaciones
+  materia?: Materia;
 }
 
 export interface Materia {
