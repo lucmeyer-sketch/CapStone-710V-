@@ -1,11 +1,10 @@
-// Contenido para src/components/Students/StudentManagement.tsx
+// src/components/Students/StudentManagement.tsx
 
 import React, { useState, useEffect } from 'react';
 // 1. Importamos nuestro cliente de Supabase
 import { supabase } from '../../supabaseClient'; 
 
 // 2. Definimos un "tipo" para nuestros datos de estudiante
-//    (Esto es para que TypeScript sepa qué forma tienen nuestros datos)
 interface Estudiante {
   id: number;
   nombre: string;
@@ -14,43 +13,95 @@ interface Estudiante {
 }
 
 const StudentManagement: React.FC = () => {
-  // 3. Creamos un "estado" para guardar la lista de estudiantes
-  //    Inicialmente, es un array vacío.
+  // 3. Estados para la lista y la carga
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 4. Usamos useEffect para que llame a Supabase
-  //    solo una vez, cuando el componente se carga por primera vez.
+  // 4. Estados para los campos del formulario
+  const [nuevoNombre, setNuevoNombre] = useState('');
+  const [nuevoApellido, setNuevoApellido] = useState('');
+  const [nuevaClaseId, setNuevaClaseId] = useState(''); 
+
+  // 5. useEffect se queda igual: carga los estudiantes al inicio
   useEffect(() => {
     getEstudiantes();
   }, []);
 
-  // 5. Esta es la función que habla con Supabase
+  // 6. Función para LEER estudiantes (se queda igual)
   async function getEstudiantes() {
     setLoading(true);
     try {
-      // Pedimos a Supabase: "Selecciona todo (*) de la tabla Estudiantes"
       const { data, error } = await supabase
         .from('Estudiantes')
         .select('*');
 
-      if (error) throw error; // Si hay un error, lo lanzamos
+      if (error) throw error; 
       if (data) {
-        // Si todo sale bien, guardamos los datos en nuestro "estado"
         setEstudiantes(data);
       }
     } catch (error) {
       console.error('Error cargando estudiantes:', error);
-      alert('Error cargando los estudiantes');
     } finally {
-      setLoading(false); // Dejamos de cargar
+      setLoading(false);
     }
   }
 
-  // (Esta función es para el formulario, la dejaremos como simulación por ahora)
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    alert('Estudiante agregado (simulación)');
+  // 7. Función para CREAR un estudiante (el formulario)
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault(); // Evita que la página se recargue
+
+    if (!nuevoNombre || !nuevoApellido || !nuevaClaseId) {
+      alert('Por favor completa todos los campos.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('Estudiantes')
+        .insert({ 
+          nombre: nuevoNombre, 
+          apellido: nuevoApellido, 
+          id_clase: parseInt(nuevaClaseId) 
+        });
+
+      if (error) throw error;
+
+      setNuevoNombre('');
+      setNuevoApellido('');
+      setNuevaClaseId('');
+
+      getEstudiantes(); 
+      alert('¡Estudiante agregado con éxito!');
+
+    } catch (error: any) {
+      alert(`Error agregando estudiante: ${error.message}`);
+    }
+  };
+
+  // 8. ¡NUEVA FUNCIÓN! Para ELIMINAR un estudiante
+  const handleDelete = async (studentId: number) => {
+    // Usamos 'window.confirm' (una alerta nativa del navegador)
+    // para pedir confirmación.
+    // Usaremos 'confirm' por ahora para simplificar,
+    // ¡más adelante podríamos hacer un modal bonito!
+    if (window.confirm("¿Estás seguro de que quieres eliminar este estudiante?")) {
+      try {
+        // 1. Usamos 'delete' de Supabase
+        const { error } = await supabase
+          .from('Estudiantes')
+          .delete()
+          .eq('id', studentId); // Borra la fila donde el 'id' coincida
+
+        if (error) throw error;
+
+        // 2. Si todo sale bien, volvemos a cargar la lista
+        getEstudiantes(); 
+        alert('Estudiante eliminado con éxito');
+
+      } catch (error: any) {
+        alert(`Error eliminando estudiante: ${error.message}`);
+      }
+    }
   };
 
   return (
@@ -59,9 +110,40 @@ const StudentManagement: React.FC = () => {
                 
       <div className="section">
           <h2>Agregar Estudiante</h2>
-          {/* ... (el formulario se queda igual por ahora) ... */}
           <form id="studentForm" onSubmit={handleSubmit}>
-              {/* ... (todo el <form> ... */}
+              <div className="form-row">
+                  <div className="form-group">
+                      <label htmlFor="studentName">Nombre</label>
+                      <input 
+                        type="text" 
+                        id="studentName" 
+                        placeholder="Nombre del estudiante"
+                        value={nuevoNombre}
+                        onChange={(e) => setNuevoNombre(e.target.value)}
+                      />
+                  </div>
+                  <div className="form-group">
+                      <label htmlFor="studentLastName">Apellido</label>
+                      <input 
+                        type="text" 
+                        id="studentLastName" 
+                        placeholder="Apellido del estudiante"
+                        value={nuevoApellido}
+                        onChange={(e) => setNuevoApellido(e.target.value)}
+                      />
+                  </div>
+              </div>
+              <div className="form-group">
+                  <label htmlFor="studentClassId">ID de Clase</label>
+                  <input 
+                    type="number" 
+                    id="studentClassId" 
+                    placeholder="Ej: 1 (para 1ro Básico A)"
+                    value={nuevaClaseId}
+                    onChange={(e) => setNuevaClaseId(e.target.value)}
+                  />
+              </div>
+              <button type="submit" className="btn">Agregar Estudiante</button>
           </form>
       </div>
 
@@ -72,14 +154,11 @@ const StudentManagement: React.FC = () => {
                   <tr>
                       <th>Nombre</th>
                       <th>Apellido</th>
-                      <th>ID de Clase</th> {/* ¡Cambiamos las columnas! */}
+                      <th>ID de Clase</th>
                       <th>Acciones</th>
                   </tr>
               </thead>
               <tbody>
-                {/* 6. Hacemos un "map" (un bucle) sobre la lista de estudiantes
-                       que obtuvimos de Supabase y creamos una fila (<tr>) por cada uno.
-                */}
                 {loading ? (
                   <tr><td colSpan={4}>Cargando...</td></tr>
                 ) : (
@@ -90,12 +169,19 @@ const StudentManagement: React.FC = () => {
                       <td>{estudiante.id_clase}</td>
                       <td>
                           <button className="btn" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>Editar</button>
-                          <button className="btn" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', marginLeft: '0.5rem', backgroundColor: '#dc3545' }}>Eliminar</button>
+                          
+                          {/* 9. BOTÓN ACTUALIZADO */}
+                          <button 
+                            className="btn" 
+                            style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', marginLeft: '0.5rem', backgroundColor: '#dc3545' }}
+                            onClick={() => handleDelete(estudiante.id)}
+                          >
+                            Eliminar
+                          </button>
                       </td>
                     </tr>
                   ))
                 )}
-                {/* 7. Borramos los datos estáticos de Juan Pérez y Sofía López */}
               </tbody>
           </table>
       </div>

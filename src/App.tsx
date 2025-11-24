@@ -1,14 +1,16 @@
-// Contenido para src/App.tsx
-
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// 1. CAMBIO: Ya no necesitamos Session ni el auth de supabase aquí
+// import { Session } from '@supabase/supabase-js';
+// import { supabase } from './supabaseClient';
 
-// Importamos los componentes que creamos (con la ruta corregida)
+// 2. CAMBIO: Importamos RoleSelector en vez de Login
+// import Login from './components/Login/Login';
+import RoleSelector from './components/RoleSelector/RoleSelector'; // <-- AÑADE ESTA LÍNEA
+
+// (El resto de imports de páginas se queda igual)
 import Layout from './components/Layout/Layout';
-import RoleSelector, { User } from './components/RoleSelector/RoleSelector';
 import Dashboard from './components/Dashboard/Dashboard';
-
-// --- Importamos TODOS los componentes de página reales (con la ruta corregida) ---
 import AttendanceSystem from './components/Attendance/AttendanceSystem';
 import ReportsSystem from './components/Reports/ReportsSystem';
 import StudentManagement from './components/Students/StudentManagement';
@@ -17,69 +19,87 @@ import StudentDashboard from './components/StudentDashboard/StudentDashboard';
 import PsychologistDashboard from './components/PsychologistDashboard/PsychologistDashboard';
 import DirectorDashboard from './components/DirectorDashboard/DirectorDashboard';
 
-// Importamos el CSS que pegamos en el Paso 1
 import './index.css';
 
-// --- Componentes vacíos que aún no hemos hecho ---
+// El tipo UserProfile se queda igual, ¡es perfecto!
+export type UserProfile = {
+  id: string;
+  rol: string;
+  email: string;
+};
+
 const Settings = () => <h1 className="page-title">Página de Configuración</h1>;
 
-
 function App() {
-  // Estado para guardar el usuario actual
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  // 3. CAMBIO: Dejamos solo el estado del perfil.
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  // Función que se pasa al RoleSelector
+  // 4. CAMBIO: Eliminamos todo el useEffect, onAuthStateChange, y fetchProfile
+  
+  // 5. AÑADIDO: Creamos la función para el RoleSelector
+  // Esta función "simula" un inicio de sesión
   const handleSelectRole = (role: string, name: string, roleName: string) => {
-    setCurrentUser({ role, name, roleName });
+    // Creamos un perfil falso que coincida con el tipo UserProfile
+    // que el resto de tu app (Layout, Sidebar) espera.
+    const fakeProfile: UserProfile = {
+      id: 'usuario-simulado-123',
+      rol: role, // 'teacher', 'student', etc.
+      email: `${name.toLowerCase().replace(' ', '.')}@simulado.com` // ej: jose.rodriguez@simulado.com
+    };
+    setProfile(fakeProfile);
   };
 
-  // Función para "cerrar sesión" y volver al selector
-  const showRoleSelector = () => {
-    setCurrentUser(null);
+  // 6. AÑADIDO: Creamos la función de "logout" que simplemente borra el perfil
+  const handleLogout = () => {
+    setProfile(null); // Borramos el perfil para volver al selector
   };
+
+  // Si tenías un estado 'loading', puedes borrarlo o dejarlo en 'false'
+  // if (loading) return null;
 
   return (
     <BrowserRouter>
-      {/* Si NO hay usuario (currentUser es null), mostramos el Selector de Roles.
-        Si SÍ hay usuario, mostramos las Rutas (la aplicación principal).
-      */}
-      {!currentUser ? (
-        <RoleSelector onSelectRole={handleSelectRole} />
-      ) : (
+      {/* 7. CAMBIO: La lógica principal ahora es solo 'profile' */}
+      {!profile ? (
+        // Si NO hay perfil, muestra el RoleSelector
         <Routes>
-          {/* Esta es la ruta "principal" que usa nuestro Layout.
-            Todas las páginas de adentro se mostrarán dentro del Layout.
-          */}
+          {/* Usamos 'onSelectRole' que espera RoleSelector.tsx */}
+          <Route path="/" element={<RoleSelector onSelectRole={handleSelectRole} />} />
+          {/* Cualquier otra ruta, redirige al inicio */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      ) : (
+        // Si SÍ hay perfil, muestra la app
+        <Routes>
           <Route 
             path="/" 
-            element={<Layout currentUser={currentUser} onShowRoleSelector={showRoleSelector} />}
+            // 8. CAMBIO: Pasamos la función de logout al Layout
+            element={<Layout currentUser={profile} onLogout={handleLogout} />}
           >
-            {/* Dependiendo del rol, la ruta "/dashboard" mostrará un componente diferente.
-            */}
+            {/* El resto de tus rutas anidadas funciona perfecto */}
             <Route 
               path="dashboard" 
               element={
-                currentUser.role === 'student' ? <StudentDashboard /> :
-                currentUser.role === 'psychologist' ? <PsychologistDashboard /> :
-                currentUser.role === 'director' ? <DirectorDashboard /> :
+                profile.rol === 'student' ? <StudentDashboard /> :
+                profile.rol === 'psychologist' ? <PsychologistDashboard /> :
+                profile.rol === 'director' ? <DirectorDashboard /> :
                 <Dashboard /> // Default para 'teacher'
               } 
             />
             
-            {/* --- Rutas para el Docente (AHORA CON LOS COMPONENTES REALES) --- */}
-            <Route path="attendance" element={<AttendanceSystem />} />
-            <Route path="reports" element={<ReportsSystem />} />
-            <Route path="students" element={<StudentManagement />} />
+            {profile.rol === 'teacher' && (
+              <>
+                <Route path="attendance" element={<AttendanceSystem />} />
+                <Route path="reports" element={<ReportsSystem />} />
+                <Route path="students" element={<StudentManagement />} />
+                <Route path="settings" element={<Settings />} />
+              </>
+            )}
+
             <Route path="messages" element={<MessagingSystem />} />
-            <Route path="settings" element={<Settings />} />
+            
+            {/* ... más rutas ... */}
 
-            {/* Rutas para otros roles (puedes agregar más) */}
-            <Route path="grades" element={<h1>Mis Notas</h1>} />
-            <Route path="risk" element={<h1>Estudiantes en Riesgo</h1>} />
-            <Route path="schedule" element={<h1>Agenda</h1>} />
-            <Route path="metrics" element={<h1>Indicadores</h1>} />
-
-            {/* Esta ruta redirige a /dashboard si entras a la raíz "/" */}
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
