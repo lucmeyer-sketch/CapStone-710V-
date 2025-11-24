@@ -1,192 +1,364 @@
-# APT - Plataforma SaaS Educativa Integral
+# 🎓 CapStone 710V - Sistema de Gestión Escolar
 
-## 🎯 Descripción del Proyecto
+<div align="center">
 
-Esta es una **demo funcional** de la plataforma SaaS educativa integral desarrollada como proyecto universitario. La plataforma está diseñada para optimizar procesos educativos, digitalizar el ecosistema educativo y democratizar la educación a través de herramientas modernas.
+![Status](https://img.shields.io/badge/status-active-success.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-Latest-3ECF8E?logo=supabase)
 
-## ✨ Características Principales
+Sistema completo de gestión escolar con roles diferenciados para docentes y estudiantes, implementando notificaciones en tiempo real y un sistema de mensajería privada.
 
-### 📊 Dashboard Institucional
-- Métricas en tiempo real (estudiantes, docentes, asistencia)
-- Estado del sistema y notificaciones
-- Panel central de métricas institucionales
+[Características](#-características) • [Instalación](#-instalación) • [Documentación](#-documentación) • [Roles](#-roles)
 
-### 🏫 Sistema de Asistencia
-- Registro de asistencia en línea
-- Estados: Presente, Ausente, Tardanza, Justificado
-- Generación automática de reportes
-- Seguimiento por estudiante y fecha
-
-### 📈 Sistema de Reportes
-- Generación automática de reportes
-- Reportes de asistencia, académicos e institucionales
-- Filtros por fecha, grado y tipo
-- Historial y descarga de reportes
-
-### 👥 Gestión de Estudiantes
-- CRUD completo de estudiantes
-- Seguimiento de calificaciones y asistencia
-- Organización por grados y secciones
-- Estadísticas académicas
-
-### 💬 Mensajería Instantánea
-- Chat directo entre usuarios
-- Mensajes grupales y anuncios
-- Interfaz moderna de conversación
-- Sistema de notificaciones
-
-### ⚙️ Configuración del Sistema
-- Configuración general
-- Estado de integraciones
-- Configuración de idioma y zona horaria
-
-## 🚀 Cómo Usar
-
-### Requisitos Previos
-- Node.js 16+ y npm instalados
-- Git (opcional, para clonar el repositorio)
-
-### Instalación y Ejecución
-
-```bash
-# Instalar dependencias
-npm install
-
-# Ejecutar en modo desarrollo
-npm start
-
-# La aplicación se abrirá automáticamente en http://localhost:3000
-```
-
-### Construir para Producción
-
-```bash
-# Crear build optimizado
-npm run build
-
-# Los archivos estarán en la carpeta 'build'
-```
-
-## 👤 Roles de Usuario
-
-La plataforma incluye diferentes roles con accesos específicos:
-
-### 🎓 Estudiante
-- Ver sus propias calificaciones y promedios
-- Consultar su asistencia
-- Acceder a mensajería
-- Dashboard personalizado con su rendimiento
-
-### 👨‍🏫 Docente
-- Gestión completa de estudiantes
-- Sistema de asistencia
-- Registro de calificaciones
-- Generación de reportes
-- Mensajería con estudiantes y colegas
-
-### 🧠 Psicóloga
-- Seguimiento de estudiantes en riesgo
-- Agenda de sesiones
-- Panel de casos críticos
-- Mensajería
-
-### 👔 Director
-- Dashboard institucional completo
-- Métricas y estadísticas generales
-- Reportes ejecutivos
-- Gestión de situaciones críticas
-
-## 🎯 Objetivos del MVP
-
-- **Optimizar procesos educativos**: Automatizar gestión de procesos, centralizar información
-- **Digitalizar ecosistema educativo**: Digitalizar expedientes, funcionar en múltiples dispositivos
-- **Democratizar educación**: Entregar información transparente y mejorar calidad de vida del usuario
-
-## 👥 Usuarios Objetivo
-
-### Docentes de Aula
-- **Necesidades**: Reducir tiempo administrativo, acceder a recursos modernos
-- **Beneficios**: Gestión simplificada de asistencia y calificaciones
-
-### Directivos/UTP
-- **Necesidades**: Reportes claros y confiables para toma de decisiones
-- **Beneficios**: Dashboard con métricas institucionales
-
-### Administradores/Psicólogos Educativos
-- **Necesidades**: Indicadores básicos para identificar necesidades de apoyo
-- **Beneficios**: Seguimiento de estudiantes, alertas automáticas
-
-## 🛠️ Tecnologías Utilizadas
-
-- **React 19** - Framework de JavaScript para interfaces de usuario
-- **TypeScript** - Tipado estático para JavaScript
-- **Material-UI (MUI)** - Biblioteca de componentes React basada en Material Design
-- **React Router** - Enrutamiento para aplicaciones React
-- **Emotion** - Biblioteca de CSS-in-JS para estilos
-- **Responsive Design** - Compatible con dispositivos móviles y tablets
-
-## 📱 Funcionalidades de Demostración
-
-- **Selector de roles** al inicio para elegir el perfil de usuario
-- **Dashboards específicos** por rol con información relevante
-- **Sistema educativo chileno** adaptado (1°-8° Básico, 1°-4° Medio)
-- **Calificaciones en escala chilena** (1.0 - 7.0)
-- **Navegación dinámica** según el rol del usuario
-- **Formularios funcionales** para gestión de estudiantes y asistencia
-- **Diseño responsive** que se adapta a móviles y tablets
-- **Interfaz profesional** con Material Design
-- **Datos ficticios realistas** para demostración
-
-## 🎨 Diseño
-
-- **Colores corporativos**: Azul (#1976d2) y blanco
-- **Iconos intuitivos** para cada sección
-- **Métricas visuales** con barras de progreso
-- **Notificaciones** con códigos de color
-- **Interfaz limpia** y fácil de usar
-
-## 📊 Métricas de Validación
-
-- **Adopción del sistema**: >70% de docentes
-- **Reducción en tiempo de reportes**: >50%
-- **Satisfacción de usuarios**: >80% en encuestas
-- **Retención de uso**: >50% después de 30 días
-
-## 🔄 Despliegue Automático
-
-El proyecto incluye scripts para automatizar el despliegue:
-
-```bash
-# Configuración inicial (solo la primera vez)
-setup-github.bat
-
-# Despliegue automático (para futuras actualizaciones)
-deploy.bat
-```
-
-## 📈 Próximos Pasos
-
-1. **Integración con sistemas existentes**
-2. **API para terceros**
-3. **Sincronización con Google Workspace**
-4. **Backup automático en la nube**
-5. **Escalabilidad en la nube**
-6. **Panel de análisis institucional avanzado**
-
-## 🤝 Contribución
-
-Este es un proyecto universitario desarrollado como demostración de concepto. Para contribuir o hacer sugerencias, contactar al equipo de desarrollo.
-
-## 📄 Licencia
-
-Proyecto desarrollado con fines académicos. Todos los derechos reservados.
+</div>
 
 ---
 
-**Desarrollado como proyecto de universidad - APT Plataforma SaaS Educativa Integral**
+## 📋 Tabla de Contenidos
 
-## 🌐 Enlaces Útiles
+- [Características](#-características)
+- [Tecnologías](#️-tecnologías)
+- [Instalación](#-instalación)
+- [Configuración](#-configuración)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Roles y Permisos](#-roles-y-permisos)
+- [Documentación](#-documentación)
+- [Capturas de Pantalla](#-capturas-de-pantalla)
+- [Licencia](#-licencia)
 
-- **Demo en vivo**: [Ver Demo](https://tu-usuario.github.io/apt-educational-platform)
-- **Documentación**: [Ver Documentación](docs/)
-- **Issues**: [Reportar Problemas](https://github.com/tu-usuario/apt-educational-platform/issues)
+---
+
+## ✨ Características
+
+### 🔐 Autenticación Segura
+- Sistema de login con Supabase Auth
+- Control de roles (Docente/Estudiante)
+- Sesiones persistentes
+- Cambio seguro de contraseñas
+
+### 👨‍🏫 Panel Docente
+- 📊 **Dashboard con estadísticas en tiempo real**
+  - Total de estudiantes
+  - Mensajes nuevos
+  - Reportes pendientes
+  - Gráficos de rendimiento
+
+- 📝 **Gestión de Calificaciones**
+  - CRUD completo de notas
+  - Filtros por materia, grado y período
+  - Estadísticas automáticas
+  - Promedio general
+
+- 📅 **Control de Asistencia**
+  - Registro diario
+  - Estados: Presente, Ausente, Tardanza
+  - Estadísticas del día
+  - Historial completo
+
+- 👥 **Administración de Estudiantes**
+  - Gestión completa de datos
+  - 12 campos personalizados
+  - Búsqueda y filtros avanzados
+  - Información de contacto
+
+- 💬 **Sistema de Mensajería**
+  - Conversaciones privadas por estudiante
+  - Categorías: General, Urgente, Académico, Conductual, Felicitación
+  - Interfaz estilo WhatsApp Web
+  - Notificaciones de mensajes no leídos
+
+- 📈 **Reportes y Seguimiento**
+  - Crear reportes académicos y conductuales
+  - Seguimiento de estudiantes
+  - Estados: Pendiente, En progreso, Completado
+
+### 👨‍🎓 Panel Estudiante
+- 👤 **Mi Perfil**
+  - Datos personales
+  - Información académica
+  - Resumen de rendimiento
+
+- 📊 **Mis Calificaciones**
+  - Vista de todas las notas
+  - Promedio por materia
+  - Promedio general
+  - Historial completo
+
+- 📅 **Mi Asistencia**
+  - Calendario de asistencia
+  - Porcentaje de asistencia
+  - Historial de ausencias y tardanzas
+
+- 💬 **Mensajes**
+  - Conversaciones separadas por docente
+  - Responder a mensajes de profesores
+  - Visualización clara del remitente
+  - Notificaciones de nuevos mensajes
+
+### 🔔 Notificaciones en Tiempo Real
+- Actualización automática de datos
+- Notificaciones instantáneas para:
+  - Nuevas calificaciones
+  - Registro de asistencia
+  - Mensajes recibidos
+  - Reportes generados
+- Color-coded por importancia:
+  - ✅ Success (verde)
+  - ⚠️ Warning (amarillo)
+  - 🚨 Urgent (rojo)
+  - 💬 Info (azul)
+
+---
+
+## 🛠️ Tecnologías
+
+### Frontend
+- **React 18** - Librería de UI
+- **TypeScript** - Tipado estático
+- **React Router DOM** - Navegación
+- **Inline Styles** - Diseño moderno sin dependencias CSS
+
+### Backend
+- **Supabase** - Backend as a Service
+  - PostgreSQL Database
+  - Supabase Auth
+  - Supabase Realtime
+  - Row Level Security
+
+### Servicios
+- `studentService` - Gestión de estudiantes
+- `asistenciaService` - Control de asistencia
+- `calificacionService` - Gestión de calificaciones
+- `mensajeService` - Sistema de mensajería
+- `reporteService` - Reportes y seguimiento
+- `authService` - Autenticación
+- `notificationService` - Notificaciones en tiempo real
+- `docenteService` - Gestión de docentes
+- `materiaService` - Gestión de materias
+- `claseService` - Gestión de clases
+
+---
+
+## 📦 Instalación
+
+### Prerrequisitos
+- Node.js 16+ y npm
+- Cuenta de Supabase (gratis)
+
+### Pasos
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/tu-usuario/CapStone-710V-.git
+   cd CapStone-710V-
+   ```
+
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar variables de entorno**
+   ```bash
+   # Crear archivo .env en la raíz del proyecto
+   cp .env.example .env
+   ```
+   
+   Editar `.env` con tus credenciales de Supabase:
+   ```env
+   REACT_APP_SUPABASE_URL=https://tu-proyecto.supabase.co
+   REACT_APP_SUPABASE_ANON_KEY=tu-clave-publica-anonima-aqui
+   ```
+
+4. **Ejecutar en desarrollo**
+   ```bash
+   npm start
+   ```
+   
+   La aplicación estará disponible en `http://localhost:3000`
+
+5. **Construir para producción**
+   ```bash
+   npm run build
+   ```
+
+---
+
+## ⚙️ Configuración
+
+### Supabase Setup
+
+1. Crear un proyecto en [Supabase](https://supabase.com)
+2. Ejecutar el esquema de base de datos (ver documentación en `/docs`)
+3. Configurar autenticación con email/password
+4. Habilitar Realtime en las tablas necesarias
+5. Copiar las credenciales al archivo `.env`
+
+Para más detalles, consulta `/docs/CONFIGURACION.md`
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+CapStone-710V-/
+├── docs/                          # Documentación
+│   ├── CONFIGURACION.md          # Guía de setup
+│   ├── DIAGRAMA-SISTEMA-COMPLETO.md  # Diagrama detallado
+│   └── RECOMENDACIONES-PUSH.md   # Guía de deploy
+│
+├── public/                        # Archivos públicos
+│   ├── index.html
+│   ├── favicon.ico
+│   └── ...
+│
+├── src/
+│   ├── components/               # Componentes React
+│   │   ├── Attendance/          # Control de asistencia
+│   │   ├── Dashboard/           # Dashboard docente
+│   │   ├── Login/               # Autenticación
+│   │   ├── Messages/            # Sistema de mensajería
+│   │   ├── Reports/             # Reportes
+│   │   ├── Settings/            # Configuración de perfil
+│   │   ├── Sidebar/             # Navegación lateral
+│   │   ├── StudentDashboard/    # Dashboard estudiante
+│   │   └── Students/            # Gestión de estudiantes
+│   │
+│   ├── services/                # Servicios de API
+│   │   ├── asistenciaService.ts
+│   │   ├── authService.ts
+│   │   ├── calificacionService.ts
+│   │   ├── mensajeService.ts
+│   │   ├── notificationService.ts
+│   │   └── ...
+│   │
+│   ├── types/                   # TypeScript types
+│   │   └── database.ts
+│   │
+│   ├── App.tsx                  # Componente principal
+│   ├── supabaseClient.ts        # Cliente de Supabase
+│   └── index.tsx                # Punto de entrada
+│
+├── .gitignore
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+---
+
+## 🔐 Roles y Permisos
+
+### 👨‍🏫 Docente
+- ✅ Acceso completo a todos los módulos
+- ✅ CRUD de calificaciones
+- ✅ Registro de asistencia
+- ✅ Gestión de estudiantes
+- ✅ Crear y enviar mensajes
+- ✅ Generar reportes
+- ✅ Ver estadísticas generales
+
+### 👨‍🎓 Estudiante
+- ✅ Ver su propio perfil
+- ✅ Consultar sus calificaciones
+- ✅ Ver su historial de asistencia
+- ✅ Recibir mensajes de docentes
+- ✅ Responder mensajes
+- ❌ No puede iniciar conversaciones
+- ❌ No puede ver datos de otros estudiantes
+- ❌ Solo acceso de lectura a sus datos
+
+---
+
+## 📚 Documentación
+
+Para información detallada, consulta la carpeta `/docs`:
+
+- **DIAGRAMA-SISTEMA-COMPLETO.md**: Diagrama visual completo del sistema
+  - Vista docente detallada
+  - Vista estudiante detallada
+  - Flujo de autenticación
+  - Esquema de base de datos
+  - Tecnologías utilizadas
+
+- **CONFIGURACION.md**: Guía paso a paso de configuración
+  - Setup de Supabase
+  - Variables de entorno
+  - Instalación de dependencias
+
+- **RECOMENDACIONES-PUSH.md**: Guía para deploy
+  - Checklist antes del push
+  - Buenas prácticas de seguridad
+  - Estructura recomendada
+
+---
+
+## 📸 Capturas de Pantalla
+
+### Dashboard Docente
+```
+┌────────────────────────────────────────────────┐
+│  📊 Dashboard con estadísticas en tiempo real  │
+│  🔔 Notificaciones instantáneas                │
+│  📈 Gráficos de rendimiento                    │
+└────────────────────────────────────────────────┘
+```
+
+### Sistema de Mensajería
+```
+┌─────────────────────┬──────────────────────────┐
+│ Conversaciones      │  Chat Privado            │
+│ • Por estudiante    │  • Estilo WhatsApp Web   │
+│ • Color-coded       │  • Respuestas en tiempo  │
+│ • Contador no leídos│    real                  │
+└─────────────────────┴──────────────────────────┘
+```
+
+---
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add: nueva característica'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+---
+
+## 👥 Autor
+
+**Proyecto CapStone 710V**
+
+- Desarrollado para gestión escolar moderna
+- Implementación: React + TypeScript + Supabase
+- Versión: 1.0.0
+- Fecha: Noviembre 2025
+
+---
+
+## 🙏 Agradecimientos
+
+- [Supabase](https://supabase.com) - Por el increíble BaaS
+- [React](https://reactjs.org) - Por la librería de UI
+- [TypeScript](https://www.typescriptlang.org) - Por el tipado estático
+
+---
+
+<div align="center">
+
+**[⬆ Volver arriba](#-capstone-710v---sistema-de-gestión-escolar)**
+
+Hecho con ❤️ para la educación
+
+</div>

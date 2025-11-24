@@ -26,7 +26,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         { text: 'Mi Perfil', icon: '👤', path: '/dashboard' },
         { text: 'Mis Notas', icon: '📊', path: '/grades' },
         { text: 'Mi Asistencia', icon: '📅', path: '/attendance' },
-        { text: 'Mensajes', icon: '💬', path: '/messages' }
+        { text: 'Mensajes', icon: '💬', path: '/messages' },
+        { text: 'Configuración', icon: '⚙️', path: '/settings' }
       ];
       break;
     case 'psychologist':
@@ -35,7 +36,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         { text: 'Estudiantes en Riesgo', icon: '⚠️', path: '/risk' },
         { text: 'Agenda', icon: '📅', path: '/schedule' },
         { text: 'Reportes', icon: '📈', path: '/reports' },
-        { text: 'Mensajería', icon: '💬', path: '/messages' }
+        { text: 'Mensajería', icon: '💬', path: '/messages' },
+        { text: 'Configuración', icon: '⚙️', path: '/settings' }
       ];
       break;
     case 'director':
@@ -43,7 +45,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         { text: 'Panel Directivo', icon: '👔', path: '/dashboard' },
         { text: 'Indicadores', icon: '📊', path: '/metrics' },
         { text: 'Reportes Ejecutivos', icon: '📈', path: '/reports' },
-        { text: 'Mensajería', icon: '💬', path: '/messages' }
+        { text: 'Mensajería', icon: '💬', path: '/messages' },
+        { text: 'Configuración', icon: '⚙️', path: '/settings' }
       ];
       break;
     default: // 'teacher'

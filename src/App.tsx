@@ -1,105 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-// 1. CAMBIO: Ya no necesitamos Session ni el auth de supabase aquí
-// import { Session } from '@supabase/supabase-js';
-// import { supabase } from './supabaseClient';
-
-// 2. CAMBIO: Importamos RoleSelector en vez de Login
-// import Login from './components/Login/Login';
-import RoleSelector from './components/RoleSelector/RoleSelector'; // <-- AÑADE ESTA LÍNEA
-
-// (El resto de imports de páginas se queda igual)
+import Login from './components/Login/Login';
 import Layout from './components/Layout/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
 import AttendanceSystem from './components/Attendance/AttendanceSystem';
 import ReportsSystem from './components/Reports/ReportsSystem';
 import StudentManagement from './components/Students/StudentManagement';
-import MessagingSystem from './components/Messaging/MessagingSystem';
+import MessagingSystem from './components/Messages/MessagingSystem';
 import StudentDashboard from './components/StudentDashboard/StudentDashboard';
 import PsychologistDashboard from './components/PsychologistDashboard/PsychologistDashboard';
 import DirectorDashboard from './components/DirectorDashboard/DirectorDashboard';
+import ProfileSettings from './components/Settings/ProfileSettings';
+import { UsuarioConDetalles } from './services/authService';
 
 import './index.css';
 
-// El tipo UserProfile se queda igual, ¡es perfecto!
+// tipo simplificado para el perfil del usuario
 export type UserProfile = {
   id: string;
   rol: string;
   email: string;
+  nombre?: string;
+  apellido?: string;
 };
 
-const Settings = () => <h1 className="page-title">Página de Configuración</h1>;
-
 function App() {
-  // 3. CAMBIO: Dejamos solo el estado del perfil.
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [usuario, setUsuario] = useState<UsuarioConDetalles | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // 4. CAMBIO: Eliminamos todo el useEffect, onAuthStateChange, y fetchProfile
-  
-  // 5. AÑADIDO: Creamos la función para el RoleSelector
-  // Esta función "simula" un inicio de sesión
-  const handleSelectRole = (role: string, name: string, roleName: string) => {
-    // Creamos un perfil falso que coincida con el tipo UserProfile
-    // que el resto de tu app (Layout, Sidebar) espera.
-    const fakeProfile: UserProfile = {
-      id: 'usuario-simulado-123',
-      rol: role, // 'teacher', 'student', etc.
-      email: `${name.toLowerCase().replace(' ', '.')}@simulado.com` // ej: jose.rodriguez@simulado.com
-    };
-    setProfile(fakeProfile);
+  useEffect(() => {
+    // verificar si hay un usuario guardado en localStorage
+    const usuarioGuardado = localStorage.getItem('usuario');
+    if (usuarioGuardado) {
+      try {
+        const usuarioData = JSON.parse(usuarioGuardado);
+        setUsuario(usuarioData);
+      } catch (error) {
+        console.error('Error al cargar usuario guardado:', error);
+        localStorage.removeItem('usuario');
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  const handleLoginSuccess = (usuarioData: UsuarioConDetalles) => {
+    setUsuario(usuarioData);
   };
 
-  // 6. AÑADIDO: Creamos la función de "logout" que simplemente borra el perfil
   const handleLogout = () => {
-    setProfile(null); // Borramos el perfil para volver al selector
+    setUsuario(null);
+    localStorage.removeItem('usuario');
   };
 
-  // Si tenías un estado 'loading', puedes borrarlo o dejarlo en 'false'
-  // if (loading) return null;
+  // convertir usuario a perfil compatible con el Layout
+  // Mapear roles de BD a roles del frontend
+  const mapearRol = (rolBD: string): string => {
+    const mapeo: { [key: string]: string } = {
+      'estudiante': 'student',
+      'docente': 'teacher',
+      'admin': 'admin',
+      'psicologo': 'psychologist',
+      'director': 'director'
+    };
+    return mapeo[rolBD] || rolBD;
+  };
+
+  const userProfile: UserProfile | null = usuario ? {
+    id: usuario.id.toString(),
+    rol: mapearRol(usuario.rol),
+    email: usuario.email,
+    nombre: usuario.detalles?.nombre,
+    apellido: usuario.detalles?.apellido
+  } : null;
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+          <p style={{ color: '#6b7280', fontSize: '16px' }}>Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
-      {/* 7. CAMBIO: La lógica principal ahora es solo 'profile' */}
-      {!profile ? (
-        // Si NO hay perfil, muestra el RoleSelector
+      {!usuario ? (
+        // mostrar login si no hay usuario
         <Routes>
-          {/* Usamos 'onSelectRole' que espera RoleSelector.tsx */}
-          <Route path="/" element={<RoleSelector onSelectRole={handleSelectRole} />} />
-          {/* Cualquier otra ruta, redirige al inicio */}
+          <Route path="/" element={<Login onLoginSuccess={handleLoginSuccess} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       ) : (
-        // Si SÍ hay perfil, muestra la app
+        // mostrar aplicación si hay usuario
         <Routes>
           <Route 
             path="/" 
-            // 8. CAMBIO: Pasamos la función de logout al Layout
-            element={<Layout currentUser={profile} onLogout={handleLogout} />}
+            element={<Layout currentUser={userProfile!} onLogout={handleLogout} />}
           >
-            {/* El resto de tus rutas anidadas funciona perfecto */}
+            {/* Dashboard según rol */}
             <Route 
               path="dashboard" 
               element={
-                profile.rol === 'student' ? <StudentDashboard /> :
-                profile.rol === 'psychologist' ? <PsychologistDashboard /> :
-                profile.rol === 'director' ? <DirectorDashboard /> :
-                <Dashboard /> // Default para 'teacher'
+                usuario.rol === 'estudiante' ? <StudentDashboard /> :
+                usuario.rol === 'psicologo' ? <PsychologistDashboard /> :
+                usuario.rol === 'director' ? <DirectorDashboard /> :
+                <Dashboard /> // Default para 'docente'
               } 
             />
             
-            {profile.rol === 'teacher' && (
+            {/* Rutas para docentes */}
+            {usuario.rol === 'docente' && (
               <>
                 <Route path="attendance" element={<AttendanceSystem />} />
                 <Route path="reports" element={<ReportsSystem />} />
                 <Route path="students" element={<StudentManagement />} />
-                <Route path="settings" element={<Settings />} />
+              </>
+            )}
+            
+            {/* Rutas para estudiantes */}
+            {usuario.rol === 'estudiante' && (
+              <>
+                <Route path="grades" element={<div className="page-title">Mis Notas (Próximamente)</div>} />
+                <Route path="attendance" element={<div className="page-title">Mi Asistencia (Próximamente)</div>} />
               </>
             )}
 
-            <Route path="messages" element={<MessagingSystem />} />
+            {/* Mensajería disponible para todos */}
+            <Route path="messages" element={<MessagingSystem usuarioActual={usuario} />} />
             
-            {/* ... más rutas ... */}
-
+            {/* Configuración disponible para todos */}
+            <Route path="settings" element={<ProfileSettings usuario={usuario} onLogout={handleLogout} />} />
+            
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
