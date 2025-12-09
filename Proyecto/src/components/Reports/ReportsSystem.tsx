@@ -450,9 +450,10 @@ const ReportsSystem: React.FC = () => {
                 style={inputStyle}
               >
                 <option value="">Todos los grados</option>
-                <option value="10°">10°</option>
-                <option value="11°">11°</option>
-                <option value="12°">12°</option>
+                <option value="1ro Medio">1ro Medio</option>
+                <option value="2do Medio">2do Medio</option>
+                <option value="3ro Medio">3ro Medio</option>
+                <option value="4to Medio">4to Medio</option>
               </select>
             </div>
 
