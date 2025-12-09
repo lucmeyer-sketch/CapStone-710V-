@@ -13,6 +13,8 @@ import StudentDashboard from './components/StudentDashboard/StudentDashboard';
 import PsychologistDashboard from './components/PsychologistDashboard/PsychologistDashboard';
 import DirectorDashboard from './components/DirectorDashboard/DirectorDashboard';
 import ProfileSettings from './components/Settings/ProfileSettings';
+import StudentGrades from './components/StudentGrades/StudentGrades';
+import StudentAttendance from './components/StudentAttendance/StudentAttendance';
 import { UsuarioConDetalles, getUsuarioById } from './services/authService';
 
 import './index.css';
@@ -153,8 +155,8 @@ function App() {
             {/* Rutas para estudiantes */}
             {usuario.rol === 'estudiante' && (
               <>
-                <Route path="grades" element={<div className="page-title">Mis Notas (Próximamente)</div>} />
-                <Route path="attendance" element={<div className="page-title">Mi Asistencia (Próximamente)</div>} />
+                <Route path="grades" element={<StudentGrades />} />
+                <Route path="attendance" element={<StudentAttendance />} />
               </>
             )}
 

@@ -5,21 +5,63 @@ import { Calificacion, CalificacionConDetalles } from '../types/database';
 export const getCalificacionesByEstudiante = async (
   estudianteId: string
 ): Promise<CalificacionConDetalles[]> => {
-  const { data, error } = await supabase
+  // Obtener calificaciones con clases y materias (sin docente)
+  const { data: calificacionesData, error: calificacionesError } = await supabase
     .from('calificaciones')
     .select(`
       *,
       clase:clases (
         *,
-        materia:materias (*),
-        docente:docentes (*)
+        materia:materias (*)
       )
     `)
     .eq('estudiante_id', estudianteId)
     .order('fecha_evaluacion', { ascending: false });
 
-  if (error) throw error;
-  return data || [];
+  if (calificacionesError) throw calificacionesError;
+  if (!calificacionesData || calificacionesData.length === 0) return [];
+
+  // Obtener IDs únicos de docentes
+  const docenteIds = Array.from(
+    new Set(
+      calificacionesData
+        .map(cal => cal.clase?.docente_id)
+        .filter((id): id is number => id !== undefined && id !== null)
+    )
+  );
+
+  // Obtener información de docentes por separado
+  let docentesData: any[] = [];
+  if (docenteIds.length > 0) {
+    const { data, error: docentesError } = await supabase
+      .from('docentes')
+      .select('id, nombre, apellido')
+      .in('id', docenteIds);
+
+    if (docentesError) throw docentesError;
+    docentesData = data || [];
+  }
+
+  // Combinar datos
+  return calificacionesData.map(calificacion => {
+    const clase = calificacion.clase;
+    if (!clase) return calificacion;
+
+    // Encontrar docente correspondiente
+    const docente = docentesData.find(d => d.id === clase.docente_id);
+
+    return {
+      ...calificacion,
+      clase: {
+        ...clase,
+        docente: docente ? {
+          id: docente.id,
+          nombre: docente.nombre,
+          apellido: docente.apellido
+        } : undefined
+      }
+    };
+  });
 };
 
 // obtener calificaciones por clase

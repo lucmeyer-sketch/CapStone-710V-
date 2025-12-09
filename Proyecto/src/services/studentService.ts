@@ -153,3 +153,66 @@ export const deleteStudent = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
+// obtener clases del estudiante desde inscripciones
+export const getClasesByEstudiante = async (estudianteId: number) => {
+  // Obtener inscripciones con clases y materias
+  const { data: inscripcionesData, error: inscripcionesError } = await supabase
+    .from('inscripciones')
+    .select(`
+      *,
+      clase:clases (
+        *,
+        materia:materias (
+          id,
+          nombre,
+          codigo
+        )
+      )
+    `)
+    .eq('estudiante_id', estudianteId)
+    .eq('estado', 'activo');
+
+  if (inscripcionesError) throw inscripcionesError;
+  if (!inscripcionesData || inscripcionesData.length === 0) return [];
+
+  // Obtener IDs únicos de docentes
+  const docenteIds = Array.from(
+    new Set(
+      inscripcionesData
+        .map(insc => insc.clase?.docente_id)
+        .filter((id): id is number => id !== undefined && id !== null)
+    )
+  );
+
+  // Obtener información de docentes por separado
+  let docentesData: any[] = [];
+  if (docenteIds.length > 0) {
+    const { data, error: docentesError } = await supabase
+      .from('docentes')
+      .select('id, nombre, apellido')
+      .in('id', docenteIds);
+
+    if (docentesError) throw docentesError;
+    docentesData = data || [];
+  }
+
+  // Combinar datos
+  return inscripcionesData.map(inscripcion => {
+    const clase = inscripcion.clase;
+    if (!clase) return null;
+
+    // Encontrar docente correspondiente
+    const docente = docentesData.find(d => d.id === clase.docente_id);
+
+    return {
+      ...clase,
+      docente: docente ? {
+        id: docente.id,
+        nombre: docente.nombre,
+        apellido: docente.apellido
+      } : undefined,
+      inscripcion_id: inscripcion.id
+    };
+  }).filter((clase): clase is NonNullable<typeof clase> => clase !== null);
+};
+
