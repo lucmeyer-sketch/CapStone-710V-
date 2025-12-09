@@ -1,52 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  getEstadisticasDashboard,
   getNotificacionesRecientes,
   suscribirseACambios,
-  Notificacion,
-  EstadisticasDashboard
+  Notificacion
 } from '../../services/notificationService';
+import { getEstadisticasDashboardDocente, EstadisticasDashboardDocente } from '../../services/dashboardService';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [estadisticas, setEstadisticas] = useState<EstadisticasDashboard>({
+  const [estadisticas, setEstadisticas] = useState<EstadisticasDashboardDocente>({
     totalEstudiantes: 0,
-    totalDocentes: 0,
+    totalClases: 0,
     tasaAsistencia: 0,
     promedioGeneral: 0,
-    usuariosActivos: 0,
     mensajesNoLeidos: 0,
-    reportesGenerados: 0,
-    clasesHoy: 0
+    clasesHoy: 0,
+    estudiantesRecientes: 0,
+    calificacionesPendientes: 0
   });
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [docenteId, setDocenteId] = useState<number | null>(null);
 
   useEffect(() => {
-    cargarDatos();
-
-    // suscribirse a cambios en tiempo real
-    const unsub = suscribirseACambios((nuevaNotificacion) => {
-      setNotificaciones(prev => [nuevaNotificacion, ...prev].slice(0, 15));
-      
-      // mostrar notificación
-      console.log('🔔 Nueva notificación:', nuevaNotificacion);
-      
-      // recargar estadísticas cuando hay cambios importantes
-      if (nuevaNotificacion.metadata?.tabla === 'asistencia' || 
-          nuevaNotificacion.metadata?.tabla === 'calificaciones') {
-        cargarEstadisticas();
-      }
-    });
-
-    return () => {
-      unsub();
-    };
+    cargarDocenteId();
   }, []);
 
+  useEffect(() => {
+    if (docenteId) {
+      cargarDatos();
+
+      // suscribirse a cambios en tiempo real
+      const unsub = suscribirseACambios((nuevaNotificacion) => {
+        setNotificaciones(prev => [nuevaNotificacion, ...prev].slice(0, 15));
+        
+        // mostrar notificación
+        console.log('🔔 Nueva notificación:', nuevaNotificacion);
+        
+        // recargar estadísticas cuando hay cambios importantes
+        if (nuevaNotificacion.metadata?.tabla === 'asistencia' || 
+            nuevaNotificacion.metadata?.tabla === 'calificaciones') {
+          cargarEstadisticas();
+        }
+      });
+
+      return () => {
+        unsub();
+      };
+    }
+  }, [docenteId]);
+
+  const cargarDocenteId = async () => {
+    try {
+      const usuarioGuardado = localStorage.getItem('usuario');
+      if (usuarioGuardado) {
+        const usuario = JSON.parse(usuarioGuardado);
+        if (usuario.detalles?.id && usuario.rol === 'docente') {
+          setDocenteId(usuario.detalles.id);
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar docente:', err);
+    }
+  };
+
   const cargarDatos = async () => {
+    if (!docenteId) return;
+    
     setLoading(true);
     try {
       await Promise.all([
@@ -62,7 +84,8 @@ const Dashboard: React.FC = () => {
   };
 
   const cargarEstadisticas = async () => {
-    const stats = await getEstadisticasDashboard();
+    if (!docenteId) return;
+    const stats = await getEstadisticasDashboardDocente(docenteId);
     setEstadisticas(stats);
   };
 
@@ -130,10 +153,10 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#1f2937', marginBottom: '8px' }}>
-          📊 Dashboard Institucional
+          📊 Mi Dashboard
         </h1>
         <p style={{ fontSize: '16px', color: '#6b7280' }}>
-          Monitoreo en tiempo real de actividades académicas
+          Resumen de tus clases, estudiantes y actividades académicas
         </p>
       </div>
 
@@ -163,16 +186,18 @@ const Dashboard: React.FC = () => {
       }}>
         <StatCard
           icon="🎓"
-          title="Total Estudiantes"
+          title="Mis Estudiantes"
           value={estadisticas.totalEstudiantes}
+          subtitle={`En ${estadisticas.totalClases} ${estadisticas.totalClases === 1 ? 'clase' : 'clases'}`}
           color="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-          link="/students"
+          link="/admin"
         />
         <StatCard
-          icon="👨‍🏫"
-          title="Total Docentes"
-          value={estadisticas.totalDocentes}
+          icon="📚"
+          title="Mis Clases"
+          value={estadisticas.totalClases}
           color="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+          link="/admin"
         />
         <StatCard
           icon="📈"
@@ -192,8 +217,9 @@ const Dashboard: React.FC = () => {
         />
         <StatCard
           icon="👥"
-          title="Usuarios Activos"
-          value={estadisticas.usuariosActivos}
+          title="Estudiantes Activos"
+          value={estadisticas.estudiantesRecientes}
+          subtitle="Últimos 7 días"
           color="linear-gradient(135deg, #30cfd0 0%, #330867 100%)"
         />
         <StatCard
@@ -205,11 +231,10 @@ const Dashboard: React.FC = () => {
           link="/messages"
         />
         <StatCard
-          icon="📊"
-          title="Reportes Generados"
-          value={estadisticas.reportesGenerados}
+          icon="📝"
+          title="Calificaciones Pendientes"
+          value={estadisticas.calificacionesPendientes}
           color="linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)"
-          link="/reports"
         />
         <StatCard
           icon="📅"

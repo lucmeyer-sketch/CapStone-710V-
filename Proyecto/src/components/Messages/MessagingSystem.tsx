@@ -13,6 +13,7 @@ import {
   MensajeConDetalles
 } from '../../services/mensajeService';
 import { UsuarioConDetalles } from '../../services/authService';
+import { useNotification } from '../../hooks/useNotification';
 
 interface Estudiante {
   id: number;
@@ -37,6 +38,7 @@ const RESPUESTAS_RAPIDAS = [
 ];
 
 const MessagingSystem: React.FC<MessagingSystemProps> = ({ usuarioActual }) => {
+  const { showNotification, NotificationContainer } = useNotification();
   const [conversaciones, setConversaciones] = useState<Conversacion[]>([]);
   const [conversacionesEstudiante, setConversacionesEstudiante] = useState<ConversacionEstudiante[]>([]);
   const [conversacionActiva, setConversacionActiva] = useState<number | null>(null);
@@ -200,7 +202,7 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ usuarioActual }) => {
         leido: false
       });
 
-      alert('✅ Mensaje enviado correctamente');
+      showNotification('Mensaje enviado correctamente', 'success');
       
       setFormMensaje({
         estudiante_id: '',
@@ -219,7 +221,9 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ usuarioActual }) => {
       }
 
     } catch (err: any) {
-      setError('Error al enviar mensaje: ' + err.message);
+      const errorMessage = err.message || 'Error desconocido';
+      setError('Error al enviar mensaje: ' + errorMessage);
+      showNotification('Error al enviar mensaje: ' + errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -264,7 +268,7 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ usuarioActual }) => {
         leido: false
       });
 
-      alert('✅ Respuesta enviada correctamente');
+      showNotification('Respuesta enviada correctamente', 'success');
       
       setFormMensaje({
         estudiante_id: '',
@@ -283,7 +287,9 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ usuarioActual }) => {
       }
 
     } catch (err: any) {
-      setError('Error al enviar respuesta: ' + err.message);
+      const errorMessage = err.message || 'Error desconocido';
+      setError('Error al enviar respuesta: ' + errorMessage);
+      showNotification('Error al enviar respuesta: ' + errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -341,6 +347,8 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ usuarioActual }) => {
     : null;
 
   return (
+    <>
+      <NotificationContainer />
     <div style={{ height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb' }}>
       {/* Header con Estadísticas */}
       <div style={{ padding: '20px', backgroundColor: 'white', borderBottom: '1px solid #e5e7eb' }}>
@@ -1185,6 +1193,7 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ usuarioActual }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

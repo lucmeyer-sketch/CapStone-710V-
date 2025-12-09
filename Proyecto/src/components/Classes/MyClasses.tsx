@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { Clase, Estudiante } from '../../types/database';
 import { useNavigate } from 'react-router-dom';
+import { formatearHorario, tieneClaseHoy } from '../../utils/horarioUtils';
 
 interface ClaseConDetalles extends Omit<Clase, 'materia'> {
   materia?: {
@@ -314,7 +315,22 @@ export const MyClasses: React.FC<MyClassesProps> = ({ docenteId, docenteNombre }
                       🕐 Horario
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                      {clase.horario || 'Por definir'}
+                      <span>
+                        {formatearHorario(clase.horario)}
+                        {tieneClaseHoy(clase.horario) && (
+                          <span style={{ 
+                            marginLeft: '8px', 
+                            backgroundColor: '#10b981', 
+                            color: 'white', 
+                            padding: '2px 8px', 
+                            borderRadius: '12px', 
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}>
+                            Hoy
+                          </span>
+                        )}
+                      </span>
                     </div>
                   </div>
                   {clase.aula && (

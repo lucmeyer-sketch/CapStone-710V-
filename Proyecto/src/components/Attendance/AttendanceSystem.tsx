@@ -1,43 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { getAllStudents } from '../../services/studentService';
 import { 
-  getAsistenciaByFecha, 
+  getAsistenciaByClaseFecha,
   upsertAsistencia
 } from '../../services/asistenciaService';
+import { getClasesByDocente } from '../../services/claseService';
 import { AsistenciaConDetalles } from '../../types/database';
 import { Student } from '../../types';
+import { Clase } from '../../types/database';
+import { useNotification } from '../../hooks/useNotification';
 
 const AttendanceSystem: React.FC = () => {
+  const { showNotification, NotificationContainer } = useNotification();
   const [students, setStudents] = useState<Student[]>([]);
+  const [clases, setClases] = useState<Clase[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AsistenciaConDetalles[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
+  const [selectedClaseId, setSelectedClaseId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [docenteId, setDocenteId] = useState<number | null>(null);
 
   // formulario
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
+    claseId: '' as string | number,
     studentId: '' as string | number,
     status: 'presente' as 'presente' | 'ausente' | 'tarde' | 'justificado',
     notes: '',
   });
 
-  // cargar estudiantes al montar el componente
+  // cargar docente y clases al montar
   useEffect(() => {
-    loadStudents();
+    cargarDocenteYClases();
   }, []);
 
-  // cargar asistencias cuando cambia la fecha
+  // cargar estudiantes cuando cambia la clase seleccionada
   useEffect(() => {
-    loadAttendance(selectedDate);
-  }, [selectedDate]);
+    if (selectedClaseId) {
+      loadStudents();
+    }
+  }, [selectedClaseId]);
+
+  // cargar asistencias cuando cambia la fecha o clase
+  useEffect(() => {
+    if (selectedClaseId) {
+      loadAttendance(selectedDate, selectedClaseId);
+    } else {
+      setAttendanceRecords([]);
+    }
+  }, [selectedDate, selectedClaseId]);
+
+  const cargarDocenteYClases = async () => {
+    try {
+      const usuarioGuardado = localStorage.getItem('usuario');
+      if (usuarioGuardado) {
+        const usuario = JSON.parse(usuarioGuardado);
+        if (usuario.detalles?.id && usuario.rol === 'docente') {
+          const docenteIdNum = usuario.detalles.id;
+          setDocenteId(docenteIdNum);
+          
+          // Cargar clases del docente
+          const clasesData = await getClasesByDocente(docenteIdNum.toString());
+          setClases(clasesData);
+          
+          // Seleccionar la primera clase por defecto
+          if (clasesData.length > 0) {
+            setSelectedClaseId(clasesData[0].id);
+            setFormData(prev => ({ ...prev, claseId: clasesData[0].id }));
+          }
+        }
+      }
+    } catch (err: any) {
+      setError('Error al cargar docente: ' + err.message);
+    }
+  };
 
   const loadStudents = async () => {
     try {
       setLoading(true);
+      // Filtrar estudiantes por la clase seleccionada
       const data = await getAllStudents();
+      // Por ahora mostramos todos, pero podríamos filtrar por grado/sección de la clase
       setStudents(data);
     } catch (err: any) {
       setError('Error al cargar estudiantes: ' + err.message);
@@ -46,10 +92,10 @@ const AttendanceSystem: React.FC = () => {
     }
   };
 
-  const loadAttendance = async (date: string) => {
+  const loadAttendance = async (date: string, claseId: number) => {
     try {
       setLoading(true);
-      const data = await getAsistenciaByFecha(date);
+      const data = await getAsistenciaByClaseFecha(claseId, date);
       setAttendanceRecords(data);
       setError(null);
     } catch (err: any) {
@@ -67,17 +113,25 @@ const AttendanceSystem: React.FC = () => {
       return;
     }
 
+    if (!formData.claseId) {
+      setError('Por favor selecciona una clase');
+      return;
+    }
+
     try {
       setLoading(true);
       await upsertAsistencia({
         estudiante_id: Number(formData.studentId),
+        clase_id: Number(formData.claseId),
         fecha: formData.date,
         estado: formData.status,
         observaciones: formData.notes || undefined,
       });
 
       // recargar la lista de asistencias
-      await loadAttendance(selectedDate);
+      if (selectedClaseId) {
+        await loadAttendance(selectedDate, selectedClaseId);
+      }
       
       // limpiar formulario
       setFormData({
@@ -87,9 +141,11 @@ const AttendanceSystem: React.FC = () => {
       });
       
       setError(null);
-      alert('Asistencia registrada correctamente');
+      showNotification('Asistencia registrada correctamente', 'success');
     } catch (err: any) {
-      setError('Error al registrar asistencia: ' + err.message);
+      const errorMessage = err.message || 'Error desconocido';
+      setError('Error al registrar asistencia: ' + errorMessage);
+      showNotification('Error al registrar asistencia: ' + errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -150,6 +206,8 @@ const AttendanceSystem: React.FC = () => {
   };
 
   return (
+    <>
+      <NotificationContainer />
     <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ marginBottom: '30px' }}>
         <h1 style={{ 
@@ -210,6 +268,46 @@ const AttendanceSystem: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             <div>
+              <label htmlFor="claseSelect" style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '500',
+                fontSize: '14px',
+                color: '#374151'
+              }}>
+                📚 Clase/Materia
+              </label>
+              <select 
+                id="claseSelect" 
+                value={formData.claseId}
+                onChange={(e) => {
+                  const claseId = Number(e.target.value);
+                  setFormData({ ...formData, claseId: claseId });
+                  setSelectedClaseId(claseId);
+                }}
+                required
+                disabled={loading || clases.length === 0}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  backgroundColor: loading ? '#f3f4f6' : 'white',
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <option value="">Seleccionar clase</option>
+                {clases.map((clase) => (
+                  <option key={clase.id} value={clase.id}>
+                    {(clase.materia as any)?.nombre || 'Sin materia'} - {clase.grado} {clase.seccion}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <label htmlFor="attendanceDate" style={{ 
                 display: 'block', 
                 marginBottom: '8px', 
@@ -252,7 +350,7 @@ const AttendanceSystem: React.FC = () => {
                 value={formData.studentId}
                 onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
                 required
-                disabled={loading}
+                disabled={loading || !formData.claseId}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
@@ -455,27 +553,61 @@ const AttendanceSystem: React.FC = () => {
             📋 Lista de Asistencia
           </h2>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <label htmlFor="filterDate" style={{ 
-              fontSize: '14px', 
-              fontWeight: '500',
-              color: '#6b7280'
-            }}>
-              📅 Filtrar por fecha:
-            </label>
-            <input 
-              type="date" 
-              id="filterDate" 
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none'
-              }}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <label htmlFor="filterClase" style={{ 
+                fontSize: '14px', 
+                fontWeight: '500',
+                color: '#6b7280'
+              }}>
+                📚 Clase:
+              </label>
+              <select 
+                id="filterClase"
+                value={selectedClaseId || ''}
+                onChange={(e) => {
+                  const claseId = Number(e.target.value);
+                  setSelectedClaseId(claseId);
+                }}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="">Todas las clases</option>
+                {clases.map((clase) => (
+                  <option key={clase.id} value={clase.id}>
+                    {(clase.materia as any)?.nombre || 'Sin materia'} - {clase.grado} {clase.seccion}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <label htmlFor="filterDate" style={{ 
+                fontSize: '14px', 
+                fontWeight: '500',
+                color: '#6b7280'
+              }}>
+                📅 Fecha:
+              </label>
+              <input 
+                type="date" 
+                id="filterDate" 
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -641,6 +773,7 @@ const AttendanceSystem: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

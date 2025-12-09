@@ -12,6 +12,7 @@ export interface Usuario {
 export interface UsuarioConDetalles extends Usuario {
   detalles?: {
     id: number;
+    rut?: string;
     nombre: string;
     apellido: string;
     telefono?: string;
@@ -76,7 +77,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     if (usuario.rol === 'estudiante') {
       const { data: estudiante } = await supabase
         .from('Estudiantes')
-        .select('id, nombre, apellido, telefono, grado, seccion')
+        .select('id, rut, nombre, apellido, telefono, grado, seccion')
         .eq('usuario_id', usuario.id)
         .single();
       
@@ -85,7 +86,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       // Obtener información completa del docente incluyendo materia
       const { data: docente, error: docenteError } = await supabase
         .from('docentes')
-        .select('id, nombre, apellido, telefono, especialidad, materia_id, grados_asignados')
+        .select('id, rut, nombre, apellido, telefono, especialidad, materia_id, grados_asignados')
         .eq('usuario_id', usuario.id)
         .single();
 
@@ -180,7 +181,7 @@ export const getUsuarioById = async (id: number): Promise<UsuarioConDetalles | n
     if (usuario.rol === 'estudiante') {
       const { data: estudiante } = await supabase
         .from('Estudiantes')
-        .select('id, nombre, apellido, telefono, grado, seccion')
+        .select('id, rut, nombre, apellido, telefono, grado, seccion')
         .eq('usuario_id', usuario.id)
         .single();
       
@@ -189,7 +190,7 @@ export const getUsuarioById = async (id: number): Promise<UsuarioConDetalles | n
       // Obtener información completa del docente incluyendo materia
       const { data: docente, error: docenteError } = await supabase
         .from('docentes')
-        .select('id, nombre, apellido, telefono, especialidad, materia_id, grados_asignados')
+        .select('id, rut, nombre, apellido, telefono, especialidad, materia_id, grados_asignados')
         .eq('usuario_id', usuario.id)
         .single();
 

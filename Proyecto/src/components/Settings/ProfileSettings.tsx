@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UsuarioConDetalles } from '../../services/authService';
 import { supabase } from '../../supabaseClient';
+import { formatearHorario, tieneClaseHoy } from '../../utils/horarioUtils';
 
 interface ClaseAsignada {
   id: number;
@@ -715,7 +716,22 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ usuario, onLogout }) 
                               🕐 Horario
                             </div>
                             <div style={{ fontWeight: '600', color: '#374151' }}>
-                              {clase.horario || 'Por definir'}
+                              <span>
+                                {formatearHorario(clase.horario)}
+                                {tieneClaseHoy(clase.horario) && (
+                                  <span style={{ 
+                                    marginLeft: '8px', 
+                                    backgroundColor: '#10b981', 
+                                    color: 'white', 
+                                    padding: '2px 8px', 
+                                    borderRadius: '12px', 
+                                    fontSize: '11px',
+                                    fontWeight: '600'
+                                  }}>
+                                    Hoy
+                                  </span>
+                                )}
+                              </span>
                             </div>
                           </div>
                           <div>
@@ -949,6 +965,21 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ usuario, onLogout }) 
                     {usuario.id || usuario.detalles?.id}
                   </div>
                 </div>
+                {(esEstudiante || esDocente) && usuario.detalles?.rut && (
+                  <div style={{
+                    padding: '16px',
+                    backgroundColor: '#f9fafb',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      🆔 RUT
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#1f2937', fontWeight: '600', fontFamily: 'monospace' }}>
+                      {usuario.detalles.rut}
+                    </div>
+                  </div>
+                )}
                 <div style={{
                   padding: '16px',
                   backgroundColor: '#f9fafb',

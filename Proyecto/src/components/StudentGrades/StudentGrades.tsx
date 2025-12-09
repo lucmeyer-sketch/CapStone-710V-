@@ -4,6 +4,7 @@ import { getClasesByEstudiante } from '../../services/studentService';
 import { getCalificacionesByEstudiante, getPromedioEstudianteClase } from '../../services/calificacionService';
 import { CalificacionConDetalles } from '../../types/database';
 import { Clase } from '../../types/database';
+import { formatearHorario } from '../../utils/horarioUtils';
 
 interface ClaseConDetalles extends Omit<Clase, 'docente' | 'materia'> {
   materia?: {
@@ -282,7 +283,7 @@ const StudentGrades: React.FC = () => {
                       fontSize: '14px',
                       color: '#6b7280'
                     }}>
-                      🕐 {claseSeleccionada.horario}
+                      🕐 {formatearHorario(claseSeleccionada.horario)}
                     </span>
                   )}
                   {claseSeleccionada.aula && (

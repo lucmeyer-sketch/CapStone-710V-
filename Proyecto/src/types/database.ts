@@ -3,6 +3,7 @@
 
 export interface Estudiante {
   id: number;
+  rut?: string;
   nombre: string;
   apellido: string;
   email?: string;
@@ -21,6 +22,7 @@ export interface Estudiante {
 
 export interface Docente {
   id: number;
+  rut?: string;
   nombre: string;
   apellido: string;
   email: string;

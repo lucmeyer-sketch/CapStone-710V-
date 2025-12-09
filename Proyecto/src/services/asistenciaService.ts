@@ -114,17 +114,19 @@ export const getAsistenciaByClaseFecha = async (
 export const upsertAsistencia = async (
   asistencia: Omit<Asistencia, 'id' | 'created_at' | 'updated_at'>
 ): Promise<Asistencia> => {
+  // El constraint único ahora es (estudiante_id, fecha, clase_id)
+  // Esto permite múltiples asistencias por estudiante por fecha (una por clase)
   const { data, error } = await supabase
     .from('asistencia')
     .upsert({
       estudiante_id: asistencia.estudiante_id,
-      clase_id: asistencia.clase_id,
+      clase_id: asistencia.clase_id || null,
       fecha: asistencia.fecha,
       estado: asistencia.estado,
       hora_llegada: asistencia.hora_llegada,
       observaciones: asistencia.observaciones,
     }, {
-      onConflict: 'estudiante_id,clase_id,fecha'
+      onConflict: 'estudiante_id,fecha,clase_id'
     })
     .select()
     .single();

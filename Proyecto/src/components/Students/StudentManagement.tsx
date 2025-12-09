@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useNotification } from '../../hooks/useNotification';
 
 interface Estudiante {
   id: number;
+  rut?: string;
   nombre: string;
   apellido: string;
   email?: string;
@@ -20,6 +22,7 @@ interface Estudiante {
 }
 
 const StudentManagement: React.FC = () => {
+  const { showNotification, NotificationContainer } = useNotification();
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +34,7 @@ const StudentManagement: React.FC = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Estudiante>>({
+    rut: '',
     nombre: '',
     apellido: '',
     email: '',
@@ -83,6 +87,7 @@ const StudentManagement: React.FC = () => {
         const { error } = await supabase
           .from('Estudiantes')
           .update({
+            rut: formData.rut || null,
             nombre: formData.nombre,
             apellido: formData.apellido,
             email: formData.email || null,
@@ -99,12 +104,13 @@ const StudentManagement: React.FC = () => {
           .eq('id', estudianteSeleccionado.id);
 
         if (error) throw error;
-        alert('✅ Estudiante actualizado correctamente');
+        showNotification('Estudiante actualizado correctamente', 'success');
       } else {
         // Crear
         const { error } = await supabase
           .from('Estudiantes')
           .insert({
+            rut: formData.rut || null,
             nombre: formData.nombre,
             apellido: formData.apellido,
             email: formData.email || null,
@@ -120,14 +126,16 @@ const StudentManagement: React.FC = () => {
           });
 
         if (error) throw error;
-        alert('✅ Estudiante agregado correctamente');
+        showNotification('Estudiante agregado correctamente', 'success');
       }
 
       limpiarFormulario();
       cargarEstudiantes();
       setMostrarFormulario(false);
     } catch (err: any) {
-      setError('Error: ' + err.message);
+      const errorMessage = err.message || 'Error desconocido';
+      setError('Error: ' + errorMessage);
+      showNotification('Error: ' + errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -136,6 +144,7 @@ const StudentManagement: React.FC = () => {
   const handleEditar = (estudiante: Estudiante) => {
     setEstudianteSeleccionado(estudiante);
     setFormData({
+      rut: estudiante.rut || '',
       nombre: estudiante.nombre,
       apellido: estudiante.apellido,
       email: estudiante.email || '',
@@ -162,16 +171,19 @@ const StudentManagement: React.FC = () => {
           .eq('id', id);
 
         if (error) throw error;
-        alert('✅ Estudiante eliminado correctamente');
+        showNotification('Estudiante eliminado correctamente', 'success');
         cargarEstudiantes();
       } catch (err: any) {
-        setError('Error al eliminar: ' + err.message);
+        const errorMessage = err.message || 'Error desconocido';
+        setError('Error al eliminar: ' + errorMessage);
+        showNotification('Error al eliminar: ' + errorMessage, 'error');
       }
     }
   };
 
   const limpiarFormulario = () => {
     setFormData({
+      rut: '',
       nombre: '',
       apellido: '',
       email: '',
@@ -213,6 +225,7 @@ const StudentManagement: React.FC = () => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
+      <NotificationContainer />
       {/* Header */}
       <div style={{ marginBottom: '30px' }}>
         <h1 style={{ 
@@ -439,6 +452,18 @@ const StudentManagement: React.FC = () => {
               👤 Información Personal
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <label style={labelStyle}>RUT *</label>
+                <input 
+                  type="text"
+                  value={formData.rut}
+                  onChange={(e) => setFormData({ ...formData, rut: e.target.value })}
+                  style={inputStyle}
+                  required
+                  placeholder="21.564.207-0"
+                />
+              </div>
+
               <div>
                 <label style={labelStyle}>Nombre *</label>
                 <input 
@@ -702,6 +727,11 @@ const StudentManagement: React.FC = () => {
                       <div style={{ fontWeight: '600', color: '#1f2937' }}>
                         {estudiante.apellido} {estudiante.nombre}
                       </div>
+                      {estudiante.rut && (
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                          🪪 {estudiante.rut}
+                        </div>
+                      )}
                       {estudiante.fecha_nacimiento && (
                         <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '2px' }}>
                           📅 {new Date(estudiante.fecha_nacimiento).toLocaleDateString('es-ES')}
@@ -722,7 +752,7 @@ const StudentManagement: React.FC = () => {
                         fontWeight: '500',
                         color: '#374151'
                       }}>
-                        {estudiante.grado}{estudiante.seccion}
+                        {estudiante.grado} - {estudiante.seccion}
                       </span>
                     </td>
                     <td style={tableCellStyle}>

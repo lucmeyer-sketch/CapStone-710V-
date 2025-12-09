@@ -3,6 +3,7 @@ import { getClasesByEstudiante } from '../../services/studentService';
 import { getAsistenciaByEstudiante } from '../../services/asistenciaService';
 import { Asistencia } from '../../types/database';
 import { Clase } from '../../types/database';
+import { formatearHorario } from '../../utils/horarioUtils';
 
 interface ClaseConDetalles extends Omit<Clase, 'docente' | 'materia'> {
   materia?: {
@@ -79,10 +80,23 @@ const StudentAttendance: React.FC = () => {
 
     try {
       setLoading(true);
+      // Obtener SOLO las asistencias de la clase seleccionada
       const asistenciasData = await getAsistenciaByEstudiante(estudianteId.toString());
-      const asistenciasFiltradas = asistenciasData.filter(
-        asist => asist.clase_id === claseSeleccionada.id
-      );
+      
+      // Filtrar por la semana actual Y por la clase seleccionada
+      const inicioSemana = obtenerInicioSemana(semanaActual);
+      const finSemana = new Date(inicioSemana);
+      finSemana.setDate(finSemana.getDate() + 6);
+      
+      const asistenciasFiltradas = asistenciasData.filter(asist => {
+        const fechaAsistencia = new Date(asist.fecha);
+        const estaEnSemana = fechaAsistencia >= inicioSemana && fechaAsistencia <= finSemana;
+        const esDeEstaClase = asist.clase_id === claseSeleccionada.id;
+        
+        // Solo mostrar asistencias de esta clase específica
+        return estaEnSemana && esDeEstaClase;
+      });
+      
       setAsistencias(asistenciasFiltradas);
       setError(null);
     } catch (err: any) {
@@ -412,7 +426,7 @@ const StudentAttendance: React.FC = () => {
                       color: '#6b7280'
                     }}>
                       <span style={{ fontSize: '18px' }}>🕐</span>
-                      <span>{claseSeleccionada.horario}</span>
+                      <span>{formatearHorario(claseSeleccionada.horario)}</span>
                     </div>
                   )}
                   {claseSeleccionada.aula && (

@@ -18,13 +18,31 @@ export const generarReporteAsistencia = async (
   fechaInicio: string,
   fechaFin: string,
   grado?: string,
-  seccion?: string
+  seccion?: string,
+  gradosPermitidos?: string[],
+  seccionesPermitidas?: string[]
 ): Promise<any> => {
   try {
-    // obtener estadísticas generales
-    const stats = await getEstadisticasAsistencia(fechaInicio, fechaFin);
+    // determinar estudiantes válidos según filtros y permisos
+    let estudiantesQuery = supabase
+      .from('Estudiantes')
+      .select('id, grado, seccion');
 
-    // obtener asistencias del período
+    if (grado) estudiantesQuery = estudiantesQuery.eq('grado', grado);
+    if (seccion) estudiantesQuery = estudiantesQuery.eq('seccion', seccion);
+    if (gradosPermitidos && gradosPermitidos.length > 0) {
+      estudiantesQuery = estudiantesQuery.in('grado', gradosPermitidos);
+    }
+    if (seccionesPermitidas && seccionesPermitidas.length > 0) {
+      estudiantesQuery = estudiantesQuery.in('seccion', seccionesPermitidas);
+    }
+
+    const { data: estudiantesFiltrados, error: estudiantesError } = await estudiantesQuery;
+    if (estudiantesError) throw estudiantesError;
+
+    const idsFiltrados = (estudiantesFiltrados || []).map((e) => e.id);
+
+    // obtener asistencias del período para los estudiantes permitidos
     let query = supabase
       .from('asistencia')
       .select(`
@@ -39,18 +57,8 @@ export const generarReporteAsistencia = async (
       .gte('fecha', fechaInicio)
       .lte('fecha', fechaFin);
 
-    // filtrar por grado y sección si se especifica
-    if (grado || seccion) {
-      const { data: estudiantes } = await supabase
-        .from('Estudiantes')
-        .select('id')
-        .eq('grado', grado || '')
-        .eq('seccion', seccion || '');
-      
-      if (estudiantes) {
-        const ids = estudiantes.map(e => e.id);
-        query = query.in('estudiante_id', ids);
-      }
+    if (idsFiltrados.length > 0) {
+      query = query.in('estudiante_id', idsFiltrados);
     }
 
     const { data: asistencias, error } = await query;
@@ -58,6 +66,11 @@ export const generarReporteAsistencia = async (
 
     // calcular estadísticas por estudiante
     const estudiantesStats = new Map();
+    let presente = 0;
+    let tarde = 0;
+    let ausente = 0;
+    let justificado = 0;
+
     asistencias?.forEach(asistencia => {
       const estudianteId = asistencia.estudiante_id;
       if (!estudiantesStats.has(estudianteId)) {
@@ -73,12 +86,35 @@ export const generarReporteAsistencia = async (
       const studentStats = estudiantesStats.get(estudianteId);
       studentStats[asistencia.estado]++;
       studentStats.total++;
+
+      // acumular totales generales
+      if (asistencia.estado === 'presente') presente++;
+      if (asistencia.estado === 'tarde') tarde++;
+      if (asistencia.estado === 'ausente') ausente++;
+      if (asistencia.estado === 'justificado') justificado++;
     });
+
+    const totalGeneral = presente + tarde + ausente + justificado;
+    const porcentajeAsistencia = totalGeneral > 0
+      ? Math.round(((presente + tarde) / totalGeneral) * 1000) / 10
+      : 0;
 
     return {
       periodo: { fechaInicio, fechaFin },
-      filtros: { grado, seccion },
-      estadisticasGenerales: stats,
+      filtros: { 
+        grado, 
+        seccion,
+        gradosAplicados: gradosPermitidos,
+        seccionesAplicadas: seccionesPermitidas
+      },
+      estadisticasGenerales: {
+        presente,
+        tarde,
+        ausente,
+        justificado,
+        total: totalGeneral,
+        porcentajeAsistencia
+      },
       porEstudiante: Array.from(estudiantesStats.values()),
       totalRegistros: asistencias?.length || 0
     };
@@ -91,7 +127,9 @@ export const generarReporteAsistencia = async (
 // generar reporte académico
 export const generarReporteAcademico = async (
   grado?: string,
-  seccion?: string
+  seccion?: string,
+  gradosPermitidos?: string[],
+  seccionesPermitidas?: string[]
 ): Promise<any> => {
   try {
     // obtener estudiantes
@@ -99,6 +137,12 @@ export const generarReporteAcademico = async (
     
     if (grado) query = query.eq('grado', grado);
     if (seccion) query = query.eq('seccion', seccion);
+    if (gradosPermitidos && gradosPermitidos.length > 0) {
+      query = query.in('grado', gradosPermitidos);
+    }
+    if (seccionesPermitidas && seccionesPermitidas.length > 0) {
+      query = query.in('seccion', seccionesPermitidas);
+    }
 
     const { data: estudiantes, error: estudiantesError } = await query;
     if (estudiantesError) throw estudiantesError;

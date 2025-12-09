@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { Clase, Docente, Materia, Estudiante } from '../../types/database';
 import { UsuarioConDetalles } from '../../services/authService';
+import { formatearHorario, tieneClaseHoy } from '../../utils/horarioUtils';
 
 interface ClaseCompleta extends Omit<Clase, 'materia' | 'docente'> {
   materia?: {
@@ -794,7 +795,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ docenteActual }) => {
                           <div>
                             <span style={{ color: '#6b7280', fontWeight: '500' }}>🕐 Horario:</span>
                             <div style={{ fontWeight: '600', color: '#374151' }}>
-                              {clase.horario || 'Por definir'}
+                              <span>
+                                {formatearHorario(clase.horario)}
+                                {tieneClaseHoy(clase.horario) && (
+                                  <span style={{ 
+                                    marginLeft: '8px', 
+                                    backgroundColor: '#10b981', 
+                                    color: 'white', 
+                                    padding: '2px 8px', 
+                                    borderRadius: '12px', 
+                                    fontSize: '11px',
+                                    fontWeight: '600'
+                                  }}>
+                                    Hoy
+                                  </span>
+                                )}
+                              </span>
                             </div>
                           </div>
                           <div>

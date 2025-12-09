@@ -55,18 +55,41 @@ export const getClasesByGradoSeccion = async (
 
 // obtener clases de un docente
 export const getClasesByDocente = async (docenteId: string): Promise<Clase[]> => {
-  const { data, error } = await supabase
+  // Obtener clases primero
+  const { data: clasesData, error: clasesError } = await supabase
     .from('clases')
-    .select(`
-      *,
-      materia:materias (*),
-      docente:docentes (*)
-    `)
+    .select('*')
     .eq('docente_id', docenteId)
     .eq('estado', 'activo');
 
-  if (error) throw error;
-  return data || [];
+  if (clasesError) throw clasesError;
+  if (!clasesData || clasesData.length === 0) return [];
+
+  // Obtener materias por separado
+  const materiaIds = Array.from(
+    new Set(
+      clasesData
+        .map(clase => clase.materia_id)
+        .filter((id): id is number => id !== undefined && id !== null)
+    )
+  );
+
+  let materiasData: any[] = [];
+  if (materiaIds.length > 0) {
+    const { data, error: materiasError } = await supabase
+      .from('materias')
+      .select('id, nombre, codigo')
+      .in('id', materiaIds);
+
+    if (materiasError) throw materiasError;
+    materiasData = data || [];
+  }
+
+  // Combinar datos
+  return clasesData.map(clase => ({
+    ...clase,
+    materia: materiasData.find(m => m.id === clase.materia_id) || null
+  }));
 };
 
 // crear clase

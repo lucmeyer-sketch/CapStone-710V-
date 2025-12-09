@@ -65,11 +65,11 @@ export const getEstadisticasDashboard = async (): Promise<EstadisticasDashboard>
     // promedio general de calificaciones
     const { data: calificaciones } = await supabase
       .from('calificaciones')
-      .select('calificacion');
+      .select('nota');
 
     let promedioGeneral = 0;
     if (calificaciones && calificaciones.length > 0) {
-      const suma = calificaciones.reduce((acc, c) => acc + (c.calificacion || 0), 0);
+      const suma = calificaciones.reduce((acc, c) => acc + (c.nota || 0), 0);
       promedioGeneral = suma / calificaciones.length;
     }
 
@@ -185,7 +185,7 @@ export const getNotificacionesRecientes = async (limite: number = 10): Promise<N
     if (calificacionesRecientes) {
       calificacionesRecientes.forEach(calif => {
         const estudiante = `${calif.estudiante?.nombre} ${calif.estudiante?.apellido}`;
-        const calificacion = calif.calificacion;
+        const calificacion = calif.nota;
         
         let tipo: 'info' | 'success' | 'warning' | 'error' = 'success';
         let icono = '📝';
@@ -382,7 +382,7 @@ export const suscribirseACambios = (
 
           if (estudiante) {
             const nombreCompleto = `${estudiante.nombre} ${estudiante.apellido}`;
-            const calificacion = payload.new.calificacion;
+            const calificacion = payload.new.nota;
             
             let tipo: 'success' | 'warning' | 'error' = 'success';
             let icono = '📝';

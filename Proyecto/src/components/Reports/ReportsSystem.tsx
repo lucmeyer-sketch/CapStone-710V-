@@ -7,6 +7,14 @@ import {
 } from '../../services/reporteService';
 
 const ReportsSystem: React.FC = () => {
+  const [usuarioActual, setUsuarioActual] = useState<any>(null);
+  const [gradosDisponibles, setGradosDisponibles] = useState<string[]>([
+    '1ro Medio',
+    '2do Medio',
+    '3ro Medio',
+    '4to Medio'
+  ]);
+  const [seccionesDisponibles, setSeccionesDisponibles] = useState<string[]>(['A', 'B', 'C']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reporteGenerado, setReporteGenerado] = useState<any>(null);
@@ -23,7 +31,51 @@ const ReportsSystem: React.FC = () => {
 
   useEffect(() => {
     cargarReportesGuardados();
+    cargarUsuario();
   }, []);
+
+  // asegurar que los filtros no usen valores fuera de lo permitido
+  useEffect(() => {
+    if (usuarioActual?.rol === 'docente') {
+      if (formData.grado && !gradosDisponibles.includes(formData.grado)) {
+        setFormData((prev) => ({ ...prev, grado: '' }));
+      }
+      if (formData.seccion && !seccionesDisponibles.includes(formData.seccion)) {
+        setFormData((prev) => ({ ...prev, seccion: '' }));
+      }
+    }
+  }, [usuarioActual, gradosDisponibles, seccionesDisponibles]);
+
+  const cargarUsuario = () => {
+    const usuarioGuardado = localStorage.getItem('usuario');
+    if (!usuarioGuardado) return;
+
+    try {
+      const usuario = JSON.parse(usuarioGuardado);
+      setUsuarioActual(usuario);
+
+      // limitar opciones de grado y sección a las asignadas al docente
+      if (usuario.rol === 'docente' && usuario.detalles?.grados_array?.length > 0) {
+        const gradosArray: string[] = usuario.detalles.grados_array;
+
+        const gradesSet = new Set<string>();
+        const sectionsSet = new Set<string>();
+
+        gradosArray.forEach((item) => {
+          const match = (item as string).match(/(.+)\s+([A-Z])$/);
+          if (match) {
+            gradesSet.add(match[1]);
+            sectionsSet.add(match[2]);
+          }
+        });
+
+        if (gradesSet.size > 0) setGradosDisponibles(Array.from(gradesSet));
+        if (sectionsSet.size > 0) setSeccionesDisponibles(Array.from(sectionsSet));
+      }
+    } catch (err) {
+      console.error('Error al cargar usuario:', err);
+    }
+  };
 
   const cargarReportesGuardados = async () => {
     try {
@@ -42,18 +94,24 @@ const ReportsSystem: React.FC = () => {
 
     try {
       let reporte;
+      const gradosPermitidos = usuarioActual?.rol === 'docente' ? gradosDisponibles : undefined;
+      const seccionesPermitidas = usuarioActual?.rol === 'docente' ? seccionesDisponibles : undefined;
       
       if (formData.tipo === 'asistencia') {
         reporte = await generarReporteAsistencia(
           formData.fechaInicio,
           formData.fechaFin,
           formData.grado || undefined,
-          formData.seccion || undefined
+          formData.seccion || undefined,
+          gradosPermitidos,
+          seccionesPermitidas
         );
       } else {
         reporte = await generarReporteAcademico(
           formData.grado || undefined,
-          formData.seccion || undefined
+          formData.seccion || undefined,
+          gradosPermitidos,
+          seccionesPermitidas
         );
       }
 
@@ -450,10 +508,9 @@ const ReportsSystem: React.FC = () => {
                 style={inputStyle}
               >
                 <option value="">Todos los grados</option>
-                <option value="1ro Medio">1ro Medio</option>
-                <option value="2do Medio">2do Medio</option>
-                <option value="3ro Medio">3ro Medio</option>
-                <option value="4to Medio">4to Medio</option>
+                {gradosDisponibles.map((grado) => (
+                  <option key={grado} value={grado}>{grado}</option>
+                ))}
               </select>
             </div>
 
@@ -467,9 +524,9 @@ const ReportsSystem: React.FC = () => {
                 style={inputStyle}
               >
                 <option value="">Todas las secciones</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
+                {seccionesDisponibles.map((seccion) => (
+                  <option key={seccion} value={seccion}>{seccion}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -568,6 +625,25 @@ const ReportsSystem: React.FC = () => {
             >
               ✕ Cerrar
             </button>
+          </div>
+
+          <div style={{ 
+            marginBottom: '16px', 
+            display: 'flex', 
+            gap: '12px', 
+            flexWrap: 'wrap',
+            color: '#6b7280',
+            fontSize: '13px'
+          }}>
+            <span>
+              <strong>Periodo:</strong> {formData.fechaInicio} → {formData.fechaFin}
+            </span>
+            <span>
+              <strong>Grado:</strong> {formData.grado || 'Todos (permitidos)'}
+            </span>
+            <span>
+              <strong>Sección:</strong> {formData.seccion || 'Todas (permitidas)'}
+            </span>
           </div>
 
           {formData.tipo === 'asistencia' 
